@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Shopify third-party embedded application for managing suppliers and product details. Merchants install the app from the Shopify App Store; it embeds inside Shopify Admin via App Bridge and extends Shopify's native product management with supplier relationships, sourcing data, and enriched product metadata. The app is multi-tenant — each merchant's store is an isolated tenant scoped by shop domain.
+**Product Hub** — a Shopify-embedded third-party app for authorized resellers of high-ticket products. Merchants install from the Shopify App Store; the app lives inside Shopify Admin via App Bridge and gives resellers a complete operating platform for supplier discovery, cold email outreach, product catalog import, AI-driven product content generation, and ongoing price monitoring. The app is multi-tenant — each merchant's store is an isolated tenant scoped by shop domain.
+
+Full product requirements: `PRD.md`
 
 ---
 
@@ -23,6 +25,9 @@ A Shopify third-party embedded application for managing suppliers and product de
 | **BullMQ** | Async job queue for webhook processing and background sync tasks. Keeps webhook handlers under Shopify's 5-second response timeout. |
 | **Railway** | Hosting platform. Runs two processes: a web server (Remix) and a worker (BullMQ drain). Scales independently. |
 | **Shopify CLI** | Project scaffolding, local dev tunnel, extension management, and app deployment. |
+| **Anthropic Claude API** | AI content generation — product descriptions, titles, tags. Injected with per-merchant niche and brand voice config. |
+| **Google/Microsoft OAuth** | Email send + read for supplier outreach via Gmail and Outlook. Credentials stored per-shop. |
+| **Nodemailer / Graph API** | Email delivery layer wrapping OAuth credentials. |
 
 ---
 
@@ -55,13 +60,17 @@ npm run lint
 shopify_manager/
 ├── app/
 │   ├── routes/              # Remix routes (UI pages + API endpoints)
-│   │   ├── app._index.tsx   # App home (embedded in Shopify Admin)
-│   │   ├── app.suppliers/   # Supplier management pages
-│   │   ├── app.products/    # Product detail management pages
-│   │   └── webhooks.tsx     # Shopify webhook handler (returns 200, enqueues job)
+│   │   ├── app._index.tsx       # Dashboard — metrics + quick actions
+│   │   ├── app.onboarding/      # First-install setup wizard
+│   │   ├── app.suppliers/       # Supplier CRM (list, detail, pipeline)
+│   │   ├── app.emails/          # Email outreach (compose, sequences, analytics)
+│   │   ├── app.products/        # Product import + AI content editing
+│   │   └── webhooks.tsx         # Shopify webhook handler (returns 200, enqueues job)
 │   ├── components/          # Reusable Polaris-based React components
-│   ├── services/            # Business logic (supplier, product, sync services)
+│   ├── services/            # Business logic (supplier, product, email, ai services)
 │   ├── jobs/                # BullMQ job definitions and worker entrypoint
+│   ├── ai/                  # Claude API prompt templates and response parsers
+│   ├── email/               # Email OAuth clients (Gmail + Outlook) and send/read logic
 │   ├── shopify.server.ts    # Shopify app config + authenticate helper
 │   └── db.server.ts         # Prisma client singleton
 ├── prisma/
@@ -127,6 +136,29 @@ shopify_manager/
 - Webhook failures: BullMQ retries with exponential backoff (max 5 attempts); failed jobs go to a dead-letter queue for inspection
 - Auth errors: `authenticate.admin()` automatically redirects to Shopify OAuth if the session is invalid — do not catch these
 
+### Domain Patterns
+
+**Supplier Pipeline States**
+Suppliers move through a defined status machine — never skip or invent statuses:
+```
+LEAD → CONTACTED → RESPONDED → NEGOTIATING → APPROVED → REJECTED | INACTIVE
+```
+
+**AI Staging Fields (Non-Destructive AI)**
+AI content is always written to staging fields first (`ai_title`, `ai_description`, `ai_tags`, `ai_attributes`). Merchants review and explicitly accept before anything is written to Shopify. Never write AI output directly to live Shopify product fields.
+
+**Email OAuth Per Shop**
+Each shop has its own email OAuth credentials. Email send/read is always scoped to the merchant's connected account. Never share credentials or send from a platform-level address on behalf of merchants.
+
+**Metafields for Product Content**
+Rich product content (descriptions, specifications, brand info) lives in Shopify metafields, not `body_html`. A Theme App Extension renders these as storefront tabs/accordions. Do not write structured content into `body_html`.
+
+### UI & Design
+All UI work must follow `DESIGN.md`. Key rules:
+- Use Polaris components as the structural layer (required for App Store)
+- Apply the Product Hub design system (dark theme, Space Grotesk headings, Inter body, indigo `#7B68EE` accent) via CSS custom property overrides on Polaris tokens
+- Status badges, table styles, card layouts, and form inputs all have defined specs in `DESIGN.md` section 4
+
 ---
 
 ## Testing
@@ -159,6 +191,8 @@ npx prisma validate
 | `prisma/schema.prisma` | Database schema. All models must include `shopDomain String`. |
 | `app/routes/webhooks.tsx` | Webhook entry point — verify HMAC, return 200, enqueue job. |
 | `app/jobs/worker.ts` | BullMQ worker entrypoint — run this as a separate process in production. |
+| `PRD.md` | Full product requirements, feature scope, and persona details. |
+| `DESIGN.md` | Design system — colors, typography, component specs, agent prompts for UI work. |
 
 ---
 
@@ -183,3 +217,5 @@ npx prisma validate
 - **Polaris is required** for App Store submission — do not introduce a competing component library.
 - **Shopify's New Embedded Auth Strategy** (token exchange) is enabled by default in CLI-generated apps post-Feb 2024 — do not revert to legacy cookie-based sessions.
 - The two core data domains are **Suppliers** and **Products** — keep them as separate Prisma models with a join table for supplier-product relationships.
+- **AI is non-destructive**: AI output always lands in staging fields. Never write AI-generated content to live Shopify fields without explicit merchant acceptance.
+- **UI must follow DESIGN.md**: all new components, pages, and layouts must use the defined palette, typography, and component specs before writing any styles.

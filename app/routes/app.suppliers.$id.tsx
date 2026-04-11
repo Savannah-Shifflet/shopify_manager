@@ -24,7 +24,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 const UpdateSchema = z.object({
   name: z.string().min(1).max(200),
   website: z.string().url().optional().or(z.literal("")),
-  status: z.enum(["LEAD","CONTACTED","RESPONDED","NEGOTIATING","APPROVED","REJECTED","INACTIVE"]),
+  status: z.enum([
+    "LEAD",
+    "CONTACTED",
+    "RESPONDED",
+    "NEGOTIATING",
+    "APPROVED",
+    "REJECTED",
+    "INACTIVE",
+  ]),
   notes: z.string().optional(),
 });
 
@@ -32,7 +40,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const parsed = UpdateSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return json({ errors: parsed.error.flatten() }, { status: 422 });
+  if (!parsed.success)
+    return json({ errors: parsed.error.flatten() }, { status: 422 });
   await updateSupplier(session.shop, params.id!, parsed.data);
   return json({ success: true });
 }
@@ -50,7 +59,9 @@ export default function SupplierDetail() {
           <BlockStack gap="400">
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">Overview</Text>
+                <Text as="h2" variant="headingMd">
+                  Overview
+                </Text>
                 <Text as="p" variant="bodyMd">
                   Website: {supplier.website ?? "—"}
                 </Text>
@@ -71,13 +82,17 @@ export default function SupplierDetail() {
           <BlockStack gap="400">
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">Contacts</Text>
+                <Text as="h2" variant="headingMd">
+                  Contacts
+                </Text>
                 {/* TODO: render contacts from supplier.contacts JSON */}
               </BlockStack>
             </Card>
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">Notes</Text>
+                <Text as="h2" variant="headingMd">
+                  Notes
+                </Text>
                 {/* TODO: render notes from supplier.notes JSON */}
               </BlockStack>
             </Card>

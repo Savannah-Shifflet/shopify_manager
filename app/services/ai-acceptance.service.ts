@@ -30,7 +30,7 @@ export const ACCEPTANCE_MAP = {
  */
 export async function applyAiAcceptance(
   shopDomain: string,
-  productId: string
+  productId: string,
 ): Promise<void> {
   const product = await db.product.findFirstOrThrow({
     where: { id: productId, shopDomain },
@@ -58,7 +58,7 @@ export async function applyAiAcceptance(
  */
 export async function rejectAiContent(
   shopDomain: string,
-  productId: string
+  productId: string,
 ): Promise<void> {
   await updateProduct(shopDomain, productId, {
     aiTitle: null,

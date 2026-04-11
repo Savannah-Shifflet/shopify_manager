@@ -10,7 +10,10 @@ import type { ShopifySyncPayload } from "./queues";
 export async function processShopifySync(job: Job<ShopifySyncPayload>) {
   const { shopDomain, productId, productShopifyId, mode = "push" } = job.data;
 
-  console.info({ shopDomain, productId, productShopifyId, mode }, "Starting Shopify sync");
+  console.info(
+    { shopDomain, productId, productShopifyId, mode },
+    "Starting Shopify sync",
+  );
 
   // TODO: implement sync pipeline
   // For "push" mode (productId provided):

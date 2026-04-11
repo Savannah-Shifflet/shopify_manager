@@ -1,9 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { authenticate } from "~/shopify.server";
-import {
-  supplierDiscoveryQueue,
-  shopifySyncQueue,
-} from "~/jobs/queues";
+import { supplierDiscoveryQueue, shopifySyncQueue } from "~/jobs/queues";
 
 // Shopify webhook handler
 // Rule: verify HMAC, return 200 immediately, enqueue BullMQ job
@@ -25,7 +22,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       await shopifySyncQueue.add(
         "webhook-product-update",
         { shopDomain: shop, productShopifyId: String(typedPayload.id) },
-        { priority: 1 }
+        { priority: 1 },
       );
       break;
     }
@@ -35,7 +32,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       await shopifySyncQueue.add(
         "webhook-product-delete",
         { shopDomain: shop, productShopifyId: String(typedPayload.id) },
-        { priority: 1 }
+        { priority: 1 },
       );
       break;
     }

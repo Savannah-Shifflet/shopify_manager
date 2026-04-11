@@ -38,8 +38,12 @@ const EnvSchema = z.object({
   ENCRYPTION_KEY: z.string().min(32),
 
   // App Config
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
+  LOG_LEVEL: z
+    .enum(["trace", "debug", "info", "warn", "error"])
+    .default("info"),
 });
 
 // Validate at startup — crashes immediately if required vars are missing
@@ -50,7 +54,9 @@ function validateEnv() {
     console.error(result.error.flatten().fieldErrors);
     // In dev, print a helpful message instead of crashing hard
     if (process.env.NODE_ENV === "development") {
-      console.warn("⚠️  Some env vars are missing — copy .env.example to .env and fill in values");
+      console.warn(
+        "⚠️  Some env vars are missing — copy .env.example to .env and fill in values",
+      );
     } else {
       process.exit(1);
     }

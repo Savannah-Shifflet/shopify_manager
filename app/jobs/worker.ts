@@ -13,16 +13,19 @@ import { processEnrichment } from "./enrichment.job";
 import { processPriceMonitor } from "./price-monitor.job";
 import { processShopifySync } from "./shopify-sync.job";
 
-const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379", {
-  maxRetriesPerRequest: null,
-});
+const connection = new IORedis(
+  process.env.REDIS_URL ?? "redis://localhost:6379",
+  {
+    maxRetriesPerRequest: null,
+  },
+);
 
 const LOG_PREFIX = "[worker]";
 
 function createWorker<T>(
   queueName: string,
   processor: (job: Job<T>) => Promise<void>,
-  concurrency = 3
+  concurrency = 3,
 ) {
   const worker = new Worker<T>(queueName, processor, {
     connection,

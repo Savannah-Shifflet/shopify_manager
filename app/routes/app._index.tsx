@@ -48,9 +48,12 @@ export default function Dashboard() {
           <Layout.Section>
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">Quick Actions</Text>
+                <Text as="h2" variant="headingMd">
+                  Quick Actions
+                </Text>
                 <Text as="p" variant="bodyMd" tone="subdued">
-                  Use the navigation to manage suppliers, import products, and monitor pricing.
+                  Use the navigation to manage suppliers, import products, and
+                  monitor pricing.
                 </Text>
               </BlockStack>
             </Card>

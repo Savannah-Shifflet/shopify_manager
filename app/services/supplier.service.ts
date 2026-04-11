@@ -3,13 +3,17 @@ import type { MerchantConfig, Supplier, Product } from "@prisma/client";
 
 // ─── Merchant Config ───
 
-export async function getMerchantConfig(shopDomain: string): Promise<MerchantConfig | null> {
+export async function getMerchantConfig(
+  shopDomain: string,
+): Promise<MerchantConfig | null> {
   return db.merchantConfig.findFirst({ where: { shopDomain } });
 }
 
 export async function upsertMerchantConfig(
   shopDomain: string,
-  data: Partial<Omit<MerchantConfig, "id" | "shopDomain" | "createdAt" | "updatedAt">>
+  data: Partial<
+    Omit<MerchantConfig, "id" | "shopDomain" | "createdAt" | "updatedAt">
+  >,
 ) {
   return db.merchantConfig.upsert({
     where: { shopDomain },
@@ -22,7 +26,7 @@ export async function upsertMerchantConfig(
 
 export async function listSuppliers(
   shopDomain: string,
-  filters: { status?: string } = {}
+  filters: { status?: string } = {},
 ) {
   return db.supplier.findMany({
     where: {
@@ -35,14 +39,15 @@ export async function listSuppliers(
 
 export async function getSupplierById(
   shopDomain: string,
-  id: string
+  id: string,
 ): Promise<Supplier | null> {
   return db.supplier.findFirst({ where: { id, shopDomain } });
 }
 
 export async function createSupplier(
   shopDomain: string,
-  data: Pick<Supplier, "name"> & Partial<Omit<Supplier, "id" | "shopDomain" | "createdAt" | "updatedAt">>
+  data: Pick<Supplier, "name"> &
+    Partial<Omit<Supplier, "id" | "shopDomain" | "createdAt" | "updatedAt">>,
 ) {
   return db.supplier.create({
     data: { shopDomain, ...data },
@@ -52,7 +57,9 @@ export async function createSupplier(
 export async function updateSupplier(
   shopDomain: string,
   id: string,
-  data: Partial<Omit<Supplier, "id" | "shopDomain" | "createdAt" | "updatedAt">>
+  data: Partial<
+    Omit<Supplier, "id" | "shopDomain" | "createdAt" | "updatedAt">
+  >,
 ) {
   return db.supplier.update({
     where: { id, shopDomain },
@@ -63,7 +70,7 @@ export async function updateSupplier(
 export async function updateSupplierStatus(
   shopDomain: string,
   id: string,
-  status: string
+  status: string,
 ) {
   return db.supplier.update({
     where: { id, shopDomain },
@@ -75,7 +82,11 @@ export async function updateSupplierStatus(
 
 export async function listProducts(
   shopDomain: string,
-  filters: { syncStatus?: string; enrichStatus?: string; supplierId?: string } = {}
+  filters: {
+    syncStatus?: string;
+    enrichStatus?: string;
+    supplierId?: string;
+  } = {},
 ) {
   return db.product.findMany({
     where: {
@@ -90,7 +101,7 @@ export async function listProducts(
 
 export async function getProductById(
   shopDomain: string,
-  id: string
+  id: string,
 ): Promise<Product | null> {
   return db.product.findFirst({ where: { id, shopDomain } });
 }
@@ -98,7 +109,7 @@ export async function getProductById(
 export async function createProduct(
   shopDomain: string,
   data: Pick<Product, "title" | "sku" | "rawSource"> &
-    Partial<Omit<Product, "id" | "shopDomain" | "createdAt" | "updatedAt">>
+    Partial<Omit<Product, "id" | "shopDomain" | "createdAt" | "updatedAt">>,
 ) {
   return db.product.create({
     data: { shopDomain, ...data },
@@ -108,7 +119,7 @@ export async function createProduct(
 export async function updateProduct(
   shopDomain: string,
   id: string,
-  data: Partial<Omit<Product, "id" | "shopDomain" | "createdAt" | "updatedAt">>
+  data: Partial<Omit<Product, "id" | "shopDomain" | "createdAt" | "updatedAt">>,
 ) {
   return db.product.update({
     where: { id, shopDomain },
@@ -118,7 +129,7 @@ export async function updateProduct(
 
 export async function getProductByShopifyId(
   shopDomain: string,
-  shopifyId: string
+  shopifyId: string,
 ): Promise<Product | null> {
   return db.product.findFirst({ where: { shopifyId, shopDomain } });
 }

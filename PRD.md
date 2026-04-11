@@ -566,7 +566,9 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 
 ---
 
-### Phase 2 — Supplier CRM & Outreach (Weeks 4–6)
+### Phase 2 — Supplier CRM & Outreach (Weeks 4–6) — **Status: in-progress**
+
+**Plan:** `C:/Users/savan/.archon/workspaces/Savannah-Shifflet/shopify_manager/artifacts/runs/ea4d8d7b257e1ca132f169121bbb3557/plan.md`
 
 **Goal:** Full supplier pipeline and email outreach end to end.
 
@@ -591,7 +593,9 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 
 ---
 
-### Phase 3 — Product Import & AI Enrichment (Weeks 7–10)
+### Phase 3 — Product Import & AI Enrichment (Weeks 7–10) — **Status: in-progress**
+
+**Plan:** `C:/Users/savan/.archon/workspaces/Savannah-Shifflet/shopify_manager/artifacts/runs/ea4d8d7b257e1ca132f169121bbb3557/plan.md`
 
 **Goal:** Full catalog import and AI description generation end to end.
 
@@ -614,7 +618,9 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 
 ---
 
-### Phase 4 — Pricing & Polish (Weeks 11–13)
+### Phase 4 — Pricing & Polish (Weeks 11–13) — **Status: in-progress**
+
+**Plan:** `C:/Users/savan/.archon/workspaces/Savannah-Shifflet/shopify_manager/artifacts/runs/ea4d8d7b257e1ca132f169121bbb3557/plan.md`
 
 **Goal:** Price monitoring, alert queue, and App Store–ready polish.
 

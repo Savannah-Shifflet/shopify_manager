@@ -9,7 +9,7 @@ export async function queueProductSync(shopDomain: string, productId: string) {
   return shopifySyncQueue.add(
     "push-product",
     { shopDomain, productId, mode: "push" },
-    { priority: 1 }
+    { priority: 1 },
   );
 }
 
@@ -45,6 +45,6 @@ export async function scheduleNightlyReconciliation(shopDomain: string) {
     {
       repeat: { pattern: "0 2 * * *" }, // 2 AM UTC
       jobId: `reconcile:${shopDomain}`,
-    }
+    },
   );
 }

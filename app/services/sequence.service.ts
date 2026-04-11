@@ -20,7 +20,7 @@ export async function createSequence(
     name: string;
     steps: Array<{ dayOffset: number; subject: string; body: string }>;
     isDefault?: boolean;
-  }
+  },
 ) {
   return db.emailSequence.create({
     data: {
@@ -37,7 +37,7 @@ export async function createSequence(
 export async function enrollSupplierInSequence(
   shopDomain: string,
   supplierId: string,
-  sequenceId: string
+  sequenceId: string,
 ) {
   // Check for existing active enrollment
   const existing = await db.supplierSequence.findFirst({
@@ -50,21 +50,30 @@ export async function enrollSupplierInSequence(
   });
 }
 
-export async function pauseSupplierSequence(shopDomain: string, supplierId: string) {
+export async function pauseSupplierSequence(
+  shopDomain: string,
+  supplierId: string,
+) {
   return db.supplierSequence.updateMany({
     where: { shopDomain, supplierId, status: "active" },
     data: { status: "paused" },
   });
 }
 
-export async function completeSupplierSequence(shopDomain: string, supplierId: string) {
+export async function completeSupplierSequence(
+  shopDomain: string,
+  supplierId: string,
+) {
   return db.supplierSequence.updateMany({
     where: { shopDomain, supplierId, status: { in: ["active", "paused"] } },
     data: { status: "completed" },
   });
 }
 
-export async function getActiveSequenceForSupplier(shopDomain: string, supplierId: string) {
+export async function getActiveSequenceForSupplier(
+  shopDomain: string,
+  supplierId: string,
+) {
   return db.supplierSequence.findFirst({
     where: { shopDomain, supplierId, status: "active" },
     include: { sequence: true },

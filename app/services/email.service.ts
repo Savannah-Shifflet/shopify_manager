@@ -5,7 +5,7 @@ import { encrypt, decrypt } from "~/utils/crypto.server";
 // ─── Email Account management ───
 
 export async function getEmailAccount(
-  shopDomain: string
+  shopDomain: string,
 ): Promise<EmailAccount | null> {
   return db.emailAccount.findUnique({ where: { shopDomain } });
 }
@@ -18,7 +18,7 @@ export async function saveEmailAccount(
     accessToken: string;
     refreshToken: string;
     expiresAt: Date;
-  }
+  },
 ) {
   return db.emailAccount.upsert({
     where: { shopDomain },
@@ -65,7 +65,7 @@ export async function getValidAccessToken(shopDomain: string): Promise<string> {
 
 export async function getEmailThread(
   shopDomain: string,
-  supplierId: string
+  supplierId: string,
 ): Promise<SupplierEmail[]> {
   return db.supplierEmail.findMany({
     where: { shopDomain, supplierId },
@@ -81,7 +81,7 @@ export async function recordSentEmail(
     body: string;
     messageId?: string;
     threadId?: string;
-  }
+  },
 ) {
   return db.supplierEmail.create({
     data: {
@@ -106,7 +106,7 @@ export async function recordReceivedEmail(
     receivedAt: Date;
     messageId?: string;
     threadId?: string;
-  }
+  },
 ) {
   return db.supplierEmail.create({
     data: {
@@ -129,7 +129,7 @@ export async function recordReceivedEmail(
 export async function sendOutreachEmail(
   shopDomain: string,
   supplierId: string,
-  data: { subject: string; body: string }
+  data: { subject: string; body: string },
 ) {
   const supplier = await db.supplier.findFirstOrThrow({
     where: { id: supplierId, shopDomain },

@@ -1,14 +1,14 @@
 import type { Product } from "@prisma/client";
 
 interface BrandVoice {
-  tone?: string[];          // e.g. ["technical", "approachable", "confident"]
-  examples?: string[];      // 1–3 example descriptions (few-shot)
+  tone?: string[]; // e.g. ["technical", "approachable", "confident"]
+  examples?: string[]; // 1–3 example descriptions (few-shot)
 }
 
 interface TemplateSection {
-  tag: string;              // e.g. "h2", "ul", "table"
-  title: string;            // e.g. "Key Features"
-  hint: string;             // e.g. "3-5 bullet points"
+  tag: string; // e.g. "h2", "ul", "table"
+  title: string; // e.g. "Key Features"
+  hint: string; // e.g. "3-5 bullet points"
   required: boolean;
 }
 
@@ -27,11 +27,15 @@ export function buildSystemPrompt(config: SystemPromptConfig): string {
     ? config.brandVoice.tone.join(", ")
     : "professional and informative";
 
-  const templateInstructions = config.contentTemplate.length > 0
-    ? `\n\nContent template sections (generate in this order):\n${config.contentTemplate
-        .map((s) => `- ${s.title} (${s.tag}): ${s.hint}${s.required ? " [required]" : " [optional]"}`)
-        .join("\n")}`
-    : "";
+  const templateInstructions =
+    config.contentTemplate.length > 0
+      ? `\n\nContent template sections (generate in this order):\n${config.contentTemplate
+          .map(
+            (s) =>
+              `- ${s.title} (${s.tag}): ${s.hint}${s.required ? " [required]" : " [optional]"}`,
+          )
+          .join("\n")}`
+      : "";
 
   const examplesSection = config.brandVoice.examples?.length
     ? `\n\nExample product descriptions (few-shot references — match this style and tone):\n${config.brandVoice.examples

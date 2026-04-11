@@ -31,7 +31,7 @@ export async function fetchUnseenEmails(
   provider: ImapProvider,
   email: string,
   accessToken: string,
-  since?: Date
+  since?: Date,
 ): Promise<ParsedEmail[]> {
   const client = new ImapFlow({
     host: IMAP_HOSTS[provider],
@@ -54,7 +54,7 @@ export async function fetchUnseenEmails(
 
     for await (const message of client.fetch(
       { since: sinceDate },
-      { envelope: true, bodyStructure: true, source: true }
+      { envelope: true, bodyStructure: true, source: true },
     )) {
       if (!message.envelope) continue;
 
@@ -88,5 +88,8 @@ function extractTextBody(source: string): string {
   const lines = source.split("\n");
   const bodyStart = lines.findIndex((l) => l.trim() === "");
   if (bodyStart === -1) return source.slice(0, 500);
-  return lines.slice(bodyStart + 1).join("\n").slice(0, 2000);
+  return lines
+    .slice(bodyStart + 1)
+    .join("\n")
+    .slice(0, 2000);
 }

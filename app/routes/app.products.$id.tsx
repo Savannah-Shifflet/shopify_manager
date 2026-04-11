@@ -81,7 +81,9 @@ export default function ProductDetail() {
 
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">AI Staging Fields</Text>
+                <Text as="h2" variant="headingMd">
+                  AI Staging Fields
+                </Text>
                 <Text as="p" variant="bodySm" tone="subdued">
                   Review AI suggestions before applying to Shopify.
                 </Text>
@@ -92,17 +94,22 @@ export default function ProductDetail() {
                 )}
                 {product.aiDescription && (
                   <Text as="p" variant="bodyMd">
-                    <strong>Description:</strong> {product.aiDescription.slice(0, 200)}...
+                    <strong>Description:</strong>{" "}
+                    {product.aiDescription.slice(0, 200)}...
                   </Text>
                 )}
                 <div style={{ display: "flex", gap: 8 }}>
                   <form method="post">
                     <input type="hidden" name="intent" value="accept-ai" />
-                    <Button submit variant="primary">Accept AI Content</Button>
+                    <Button submit variant="primary">
+                      Accept AI Content
+                    </Button>
                   </form>
                   <form method="post">
                     <input type="hidden" name="intent" value="reject-ai" />
-                    <Button submit tone="critical">Reject</Button>
+                    <Button submit tone="critical">
+                      Reject
+                    </Button>
                   </form>
                 </div>
               </BlockStack>
@@ -110,7 +117,9 @@ export default function ProductDetail() {
 
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">Actions</Text>
+                <Text as="h2" variant="headingMd">
+                  Actions
+                </Text>
                 <div style={{ display: "flex", gap: 8 }}>
                   <form method="post">
                     <input type="hidden" name="intent" value="enrich" />
@@ -130,7 +139,9 @@ export default function ProductDetail() {
           <BlockStack gap="400">
             <Card>
               <BlockStack gap="200">
-                <Text as="h2" variant="headingMd">Details</Text>
+                <Text as="h2" variant="headingMd">
+                  Details
+                </Text>
                 <Text as="p" variant="bodyMd">
                   SKU: <span className="mono">{product.sku}</span>
                 </Text>

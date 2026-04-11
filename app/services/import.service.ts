@@ -8,12 +8,12 @@ import { catalogScrapeQueue } from "~/jobs/queues";
 export async function queueFileImport(
   shopDomain: string,
   supplierId: string,
-  fileKey: string
+  fileKey: string,
 ) {
   const job = await catalogScrapeQueue.add(
     "file-import",
     { shopDomain, supplierId, scrapeUrl: "", mode: "file", fileKey },
-    { priority: 1 }
+    { priority: 1 },
   );
   return { jobId: job.id };
 }
@@ -24,12 +24,12 @@ export async function queueFileImport(
 export async function queueUrlScrape(
   shopDomain: string,
   supplierId: string,
-  url: string
+  url: string,
 ) {
   const job = await catalogScrapeQueue.add(
     "url-scrape",
     { shopDomain, supplierId, scrapeUrl: url, mode: "url" },
-    { priority: 1 }
+    { priority: 1 },
   );
   return { jobId: job.id };
 }
@@ -42,9 +42,30 @@ export async function queueUrlScrape(
  */
 export function detectColumnMapping(headers: string[]): Record<string, string> {
   const KNOWN_FIELDS: Record<string, string[]> = {
-    title: ["item name", "product name", "name", "description", "product", "title"],
-    sku: ["sku", "item #", "item number", "part number", "part #", "upc", "mpn"],
-    cost: ["your cost", "cost", "wholesale price", "dealer cost", "dealer price"],
+    title: [
+      "item name",
+      "product name",
+      "name",
+      "description",
+      "product",
+      "title",
+    ],
+    sku: [
+      "sku",
+      "item #",
+      "item number",
+      "part number",
+      "part #",
+      "upc",
+      "mpn",
+    ],
+    cost: [
+      "your cost",
+      "cost",
+      "wholesale price",
+      "dealer cost",
+      "dealer price",
+    ],
     msrp: ["msrp", "retail price", "suggested retail", "list price", "srp"],
     mapPrice: ["map", "map price", "minimum advertised price"],
   };

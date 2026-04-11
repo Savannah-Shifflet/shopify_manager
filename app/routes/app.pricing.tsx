@@ -1,7 +1,14 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { Page, Card, Text, BlockStack, DataTable, Badge } from "@shopify/polaris";
+import {
+  Page,
+  Card,
+  Text,
+  BlockStack,
+  DataTable,
+  Badge,
+} from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { listPriceAlerts, listPricingRules } from "~/services/pricing.service";
 
@@ -18,10 +25,22 @@ export default function Pricing() {
   const { alerts, rules } = useLoaderData<typeof loader>();
 
   const alertRows = alerts.map((a) => [
-    <span key={`prod-${a.id}`} className="mono">{a.productId}</span>,
-    <span key={`old-${a.id}`} className="mono">{a.oldPrice}</span>,
-    <span key={`new-${a.id}`} className="mono">{a.newPrice}</span>,
-    a.mapViolation ? <Badge tone="critical" key={`map-${a.id}`}>MAP Violation</Badge> : "—",
+    <span key={`prod-${a.id}`} className="mono">
+      {a.productId}
+    </span>,
+    <span key={`old-${a.id}`} className="mono">
+      {a.oldPrice}
+    </span>,
+    <span key={`new-${a.id}`} className="mono">
+      {a.newPrice}
+    </span>,
+    a.mapViolation ? (
+      <Badge tone="critical" key={`map-${a.id}`}>
+        MAP Violation
+      </Badge>
+    ) : (
+      "—"
+    ),
     <Badge key={`status-${a.id}`}>{a.status}</Badge>,
   ]);
 
@@ -30,7 +49,9 @@ export default function Pricing() {
     r.markupType,
     r.markupValue,
     String(r.priority),
-    <Badge key={`active-${r.id}`} tone={r.active ? "success" : "info"}>{r.active ? "Active" : "Inactive"}</Badge>,
+    <Badge key={`active-${r.id}`} tone={r.active ? "success" : "info"}>
+      {r.active ? "Active" : "Inactive"}
+    </Badge>,
   ]);
 
   return (
@@ -48,11 +69,19 @@ export default function Pricing() {
               )}
             </Text>
             {alertRows.length === 0 ? (
-              <Text as="p" variant="bodyMd" tone="subdued">No pending alerts.</Text>
+              <Text as="p" variant="bodyMd" tone="subdued">
+                No pending alerts.
+              </Text>
             ) : (
               <DataTable
                 columnContentTypes={["text", "text", "text", "text", "text"]}
-                headings={["Product", "Old Price", "New Price", "MAP", "Status"]}
+                headings={[
+                  "Product",
+                  "Old Price",
+                  "New Price",
+                  "MAP",
+                  "Status",
+                ]}
                 rows={alertRows}
               />
             )}
@@ -61,7 +90,9 @@ export default function Pricing() {
 
         <Card>
           <BlockStack gap="300">
-            <Text as="h2" variant="headingMd">Pricing Rules</Text>
+            <Text as="h2" variant="headingMd">
+              Pricing Rules
+            </Text>
             {ruleRows.length === 0 ? (
               <Text as="p" variant="bodyMd" tone="subdued">
                 No rules yet. Create one to automate repricing.

@@ -1,0 +1,243 @@
+// Prisma schema for SourceDesk
+// Dev: SQLite (provider = "sqlite", url = "file:./dev.db")
+// Prod: switch to provider = "postgresql" and DATABASE_URL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Shopify session storage (required by @shopify/shopify-app-session-storage-prisma) ───
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+// ─── Enums (stored as strings in SQLite, native enums in PostgreSQL) ───
+
+// SQLite note: Prisma represents enums as String in SQLite.
+// Switch datasource provider to "postgresql" for production.
+
+// ─── Merchant Configuration ───
+
+model MerchantConfig {
+  id               String   @id @default(cuid())
+  shopDomain       String   @unique
+  niche            String?
+  categories       String   @default("[]") // JSON: string[]
+  brandVoice       String   @default("{}") // JSON: { tone: string[], examples: string[] }
+  contentTemplate  String   @default("[]") // JSON: { tag, title, hint, required }[]
+  defaultMarkupPct String?  @default("40") // stored as string for SQLite compat
+  mapEnforcement   String   @default("alert") // "alert" | "block"
+  onboardingStep   Int      @default(0)
+  onboardingDone   Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([shopDomain])
+}
+
+// ─── Suppliers ───
+
+model Supplier {
+  id             String   @id @default(cuid())
+  shopDomain     String
+  name           String
+  website        String?
+  status         String   @default("LEAD") // SupplierStatus enum
+  contacts       String   @default("[]")   // JSON: { name, email, phone, role }[]
+  notes          String   @default("[]")   // JSON: { body, createdAt }[]
+  documents      String   @default("[]")   // JSON: { name, url, type, uploadedAt }[]
+  categories     String   @default("[]")   // JSON: string[]
+  source         String?  // "discovery" | "manual"
+  relevanceScore String?  // stored as string for SQLite compat
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  emails       SupplierEmail[]
+  products     Product[]
+  sequences    SupplierSequence[]
+  priceMonitor PriceMonitorConfig?
+
+  @@index([shopDomain])
+  @@index([shopDomain, status])
+}
+
+model SupplierEmail {
+  id         String   @id @default(cuid())
+  shopDomain String
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  direction  String   // "sent" | "received"
+  subject    String
+  body       String
+  sentAt     DateTime
+  messageId  String?
+  threadId   String?
+  opened     Boolean  @default(false)
+  openedAt   DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([shopDomain])
+  @@index([shopDomain, supplierId])
+}
+
+// ─── Email Accounts & Sequences ───
+
+model EmailAccount {
+  id           String   @id @default(cuid())
+  shopDomain   String   @unique
+  provider     String   // "GMAIL" | "OUTLOOK"
+  email        String
+  accessToken  String   // encrypted at rest (AES-256)
+  refreshToken String   // encrypted at rest (AES-256)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([shopDomain])
+}
+
+model EmailSequence {
+  id         String   @id @default(cuid())
+  shopDomain String
+  name       String
+  steps      String   @default("[]") // JSON: { dayOffset, subject, body }[]
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  supplierSeqs SupplierSequence[]
+
+  @@index([shopDomain])
+}
+
+model SupplierSequence {
+  id          String        @id @default(cuid())
+  shopDomain  String
+  supplierId  String
+  supplier    Supplier      @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  sequenceId  String
+  sequence    EmailSequence @relation(fields: [sequenceId], references: [id])
+  currentStep Int           @default(0)
+  status      String        @default("active") // "active" | "paused" | "completed"
+  startedAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([shopDomain])
+  @@index([shopDomain, supplierId])
+}
+
+// ─── Products ───
+
+model Product {
+  id            String   @id @default(cuid())
+  shopDomain    String
+  supplierId    String?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+  shopifyId     String?  // null until pushed to Shopify
+  title         String
+  sku           String
+  cost          String?  // Decimal as string for SQLite compat
+  msrp          String?
+  mapPrice      String?
+  syncStatus    String   @default("NEVER_SYNCED") // SyncStatus enum
+  syncHash      String?  // SHA-256 of last synced payload
+  enrichStatus  String   @default("NOT_STARTED")  // EnrichStatus enum
+  aiTitle       String?
+  aiDescription String?
+  aiTags        String   @default("[]") // JSON: string[]
+  aiAttributes  String?  // JSON object
+  images        String   @default("[]") // JSON: { url, alt }[]
+  rawSource     String   @default("{}") // JSON — original import data, never mutated
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  priceHistory PriceHistory[]
+  priceAlerts  PriceAlert[]
+
+  @@index([shopDomain])
+  @@index([shopDomain, supplierId])
+  @@index([shopDomain, syncStatus])
+  @@index([shopDomain, enrichStatus])
+}
+
+// ─── Pricing ───
+
+model PriceHistory {
+  id         String   @id @default(cuid())
+  shopDomain String
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPrice   String   // Decimal as string
+  newPrice   String
+  source     String   // "scrape" | "webhook" | "manual"
+  createdAt  DateTime @default(now())
+
+  @@index([shopDomain, productId])
+}
+
+model PriceAlert {
+  id             String   @id @default(cuid())
+  shopDomain     String
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPrice       String
+  newPrice       String
+  suggestedPrice String?
+  mapViolation   Boolean  @default(false)
+  status         String   @default("pending") // "pending" | "approved" | "rejected" | "auto_applied"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([shopDomain])
+  @@index([shopDomain, status])
+}
+
+model PricingRule {
+  id          String   @id @default(cuid())
+  shopDomain  String
+  name        String
+  supplierId  String?
+  markupType  String   // "percentage" | "fixed"
+  markupValue String   // Decimal as string
+  priority    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shopDomain])
+}
+
+model PriceMonitorConfig {
+  id            String    @id @default(cuid())
+  shopDomain    String
+  supplierId    String    @unique
+  supplier      Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  scrapeUrl     String
+  frequencyMs   Int       @default(21600000) // 6 hours
+  lastScrapedAt DateTime?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([shopDomain])
+}

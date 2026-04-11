@@ -1,0 +1,89 @@
+/*
+ * SourceDesk custom theme — overrides Polaris CSS custom properties
+ * with the DESIGN.md dark palette and typography.
+ *
+ * Import this file in app/routes/app.tsx alongside polarisStyles.
+ */
+
+:root {
+  /* Page background */
+  --color-bg-page: #0c0d10;
+
+  /* Card / panel surfaces */
+  --color-surface: #14161b;
+  --color-surface-elevated: #1c1f26;
+
+  /* Borders */
+  --color-border: #272b35;
+
+  /* Primary accent */
+  --color-accent: #7b68ee;
+  --color-accent-hover: #6855e0;
+  --color-accent-active: #5b4fd4;
+
+  /* Text */
+  --color-text-primary: #f0f1f5;
+  --color-text-secondary: #8e95a6;
+  --color-text-muted: #525a6a;
+  --color-text-inverse: #0c0d10;
+
+  /* Semantic */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #60a5fa;
+
+  /* Typography */
+  --font-heading: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+}
+
+/* Polaris custom property overrides for dark theme */
+.Polaris-Frame {
+  --p-color-bg: var(--color-bg-page);
+  --p-color-bg-surface: var(--color-surface);
+  --p-color-border: var(--color-border);
+  --p-color-text: var(--color-text-primary);
+  --p-color-text-secondary: var(--color-text-secondary);
+  --p-color-bg-fill-brand: var(--color-accent);
+  --p-color-bg-fill-brand-hover: var(--color-accent-hover);
+  --p-border-radius-300: 12px;
+  --p-border-radius-200: 8px;
+}
+
+/* Page headings use Space Grotesk */
+.Polaris-Page__Title,
+.Polaris-Text--headingXl,
+.Polaris-Text--headingLg,
+.Polaris-Text--headingMd {
+  font-family: var(--font-heading) !important;
+  letter-spacing: -0.02em;
+}
+
+/* Mono font for SKUs, prices, IDs */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* Status badge pill base — extend with semantic color classes */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge--success  { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.badge--warning  { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.badge--error    { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.badge--info     { background: rgba(96, 165, 250, 0.12); color: #60a5fa; }
+.badge--neutral  { background: rgba(142, 149, 166, 0.12); color: #8e95a6; }
+.badge--indigo   { background: rgba(123, 104, 238, 0.12); color: #7b68ee; }

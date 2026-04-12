@@ -24,7 +24,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const parsed = SendSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return json({ errors: parsed.error.flatten() }, { status: 422 });
+  if (!parsed.success)
+    return json({ errors: parsed.error.flatten() }, { status: 422 });
   await sendOutreachEmail(session.shop, params.id!, parsed.data);
   return json({ success: true });
 }

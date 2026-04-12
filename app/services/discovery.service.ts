@@ -7,7 +7,7 @@ import { supplierDiscoveryQueue } from "~/jobs/queues";
  */
 export async function triggerSupplierDiscovery(
   shopDomain: string,
-  options: { keywords?: string[] } = {}
+  options: { keywords?: string[] } = {},
 ) {
   const job = await supplierDiscoveryQueue.add(
     "on-demand-discovery",
@@ -16,7 +16,7 @@ export async function triggerSupplierDiscovery(
       keywords: options.keywords ?? [],
       triggeredBy: "manual",
     },
-    { priority: 1 } // manual triggers get higher priority than scheduled
+    { priority: 1 }, // manual triggers get higher priority than scheduled
   );
 
   return { jobId: job.id };
@@ -33,7 +33,7 @@ export async function scheduleDiscovery(shopDomain: string) {
     {
       repeat: { pattern: "0 8 * * *" }, // 8 AM UTC daily
       jobId: `discovery:${shopDomain}`, // stable ID for deduplication
-    }
+    },
   );
 }
 
@@ -41,7 +41,5 @@ export async function scheduleDiscovery(shopDomain: string) {
  * Removes the repeatable discovery schedule for a shop.
  */
 export async function cancelDiscoverySchedule(shopDomain: string) {
-  await supplierDiscoveryQueue.removeRepeatableByKey(
-    `discovery:${shopDomain}`
-  );
+  await supplierDiscoveryQueue.removeRepeatableByKey(`discovery:${shopDomain}`);
 }

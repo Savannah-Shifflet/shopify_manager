@@ -12,7 +12,7 @@ export function getGoogleOAuthClient() {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
+    process.env.GOOGLE_REDIRECT_URI,
   );
 }
 
@@ -71,7 +71,7 @@ export async function refreshGoogleToken(refreshToken: string) {
  */
 export async function sendGmailMessage(
   accessToken: string,
-  message: { to: string; subject: string; body: string; from: string }
+  message: { to: string; subject: string; body: string; from: string },
 ) {
   const oauth2Client = getGoogleOAuthClient();
   oauth2Client.setCredentials({ access_token: accessToken });
@@ -83,7 +83,7 @@ export async function sendGmailMessage(
       `To: ${message.to}\r\n` +
       `Subject: ${message.subject}\r\n` +
       `Content-Type: text/html; charset=utf-8\r\n\r\n` +
-      message.body
+      message.body,
   )
     .toString("base64")
     .replace(/\+/g, "-")

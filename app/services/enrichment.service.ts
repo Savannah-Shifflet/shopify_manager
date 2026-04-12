@@ -1,12 +1,19 @@
 import Anthropic from "@anthropic-ai/sdk";
 import db from "~/db.server";
+import { env } from "~/env.server";
 import { updateProduct, getMerchantConfig } from "~/services/supplier.service";
-import { buildSystemPrompt, buildProductPrompt } from "~/ai/prompts/enrichment.prompt";
-import { AiEnrichmentOutputSchema, extractJson } from "~/ai/parsers/enrichment.parser";
+import {
+  buildSystemPrompt,
+  buildProductPrompt,
+} from "~/ai/prompts/enrichment.prompt";
+import {
+  AiEnrichmentOutputSchema,
+  extractJson,
+} from "~/ai/parsers/enrichment.parser";
 import pino from "pino";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const log = pino({ level: process.env.LOG_LEVEL ?? "info" });
+const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+const log = pino({ level: env.LOG_LEVEL });
 
 const MODELS = {
   quality: "claude-sonnet-4-5",
@@ -20,7 +27,7 @@ const MODELS = {
 export async function enrichProduct(
   shopDomain: string,
   productId: string,
-  priority: "single" | "batch" = "single"
+  priority: "single" | "batch" = "single",
 ): Promise<void> {
   const product = await db.product.findFirstOrThrow({
     where: { id: productId, shopDomain },
@@ -34,7 +41,9 @@ export async function enrichProduct(
 
     const systemPrompt = buildSystemPrompt({
       niche: config?.niche ?? "",
-      brandVoice: config?.brandVoice ? JSON.parse(config.brandVoice as string) : {},
+      brandVoice: config?.brandVoice
+        ? JSON.parse(config.brandVoice as string)
+        : {},
       contentTemplate: config?.contentTemplate
         ? JSON.parse(config.contentTemplate as string)
         : [],
@@ -54,11 +63,14 @@ export async function enrichProduct(
       .join("");
 
     const parsed = AiEnrichmentOutputSchema.safeParse(
-      JSON.parse(extractJson(rawText))
+      JSON.parse(extractJson(rawText)),
     );
 
     if (!parsed.success) {
-      log.warn({ shopDomain, productId, errors: parsed.error.flatten() }, "AI output parse failed");
+      log.warn(
+        { shopDomain, productId, errors: parsed.error.flatten() },
+        "AI output parse failed",
+      );
       await updateProduct(shopDomain, productId, { enrichStatus: "FAILED" });
       return;
     }
@@ -72,14 +84,16 @@ export async function enrichProduct(
         outputTokens: response.usage.output_tokens,
         model,
       },
-      "AI enrichment token usage"
+      "AI enrichment token usage",
     );
 
     await updateProduct(shopDomain, productId, {
       aiTitle: parsed.data.title,
       aiDescription: parsed.data.description,
       aiTags: JSON.stringify(parsed.data.tags ?? []),
-      aiAttributes: parsed.data.attributes ? JSON.stringify(parsed.data.attributes) : null,
+      aiAttributes: parsed.data.attributes
+        ? JSON.stringify(parsed.data.attributes)
+        : null,
       enrichStatus: "DONE",
     });
   } catch (err) {

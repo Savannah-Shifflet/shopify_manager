@@ -1,5 +1,9 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, unstable_parseMultipartFormData, unstable_createMemoryUploadHandler } from "@remix-run/node";
+import {
+  json,
+  unstable_parseMultipartFormData,
+  unstable_createMemoryUploadHandler,
+} from "@remix-run/node";
 import { useLoaderData, useActionData } from "@remix-run/react";
 import { Page, Card, Text, BlockStack, Button, Banner } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
@@ -23,7 +27,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const uploadHandler = unstable_createMemoryUploadHandler({
       maxPartSize: 10 * 1024 * 1024, // 10 MB
     });
-    const formData = await unstable_parseMultipartFormData(request, uploadHandler);
+    const formData = await unstable_parseMultipartFormData(
+      request,
+      uploadHandler,
+    );
     const file = formData.get("file");
 
     if (!file || typeof file === "string") {
@@ -32,13 +39,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // TODO: enqueue catalog-scrape job with file data
     void session;
-    return json({ success: true, message: "File upload queued for processing" });
+    return json({
+      success: true,
+      message: "File upload queued for processing",
+    });
   }
 
   // URL scrape
   const formData = await request.formData();
   const parsed = ScrapeSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return json({ errors: parsed.error.flatten() }, { status: 422 });
+  if (!parsed.success)
+    return json({ errors: parsed.error.flatten() }, { status: 422 });
 
   // TODO: enqueue catalog-scrape job with URL
   return json({ success: true, message: "URL scrape queued for processing" });
@@ -54,16 +65,21 @@ export default function Import() {
         {"success" in (actionData ?? {}) && (
           <Banner tone="success">
             <Text as="p" variant="bodyMd">
-              {"message" in (actionData ?? {}) ? String((actionData as {message: string}).message) : "Import queued"}
+              {"message" in (actionData ?? {})
+                ? String((actionData as { message: string }).message)
+                : "Import queued"}
             </Text>
           </Banner>
         )}
 
         <Card>
           <BlockStack gap="300">
-            <Text as="h2" variant="headingMd">Upload CSV / Excel</Text>
+            <Text as="h2" variant="headingMd">
+              Upload CSV / Excel
+            </Text>
             <Text as="p" variant="bodyMd" tone="subdued">
-              Upload a supplier price sheet. Supported formats: .csv, .xlsx, .xls
+              Upload a supplier price sheet. Supported formats: .csv, .xlsx,
+              .xls
             </Text>
             {/* TODO: implement DropZone file upload with column mapper UI */}
             <Button url="">Upload File</Button>
@@ -72,9 +88,12 @@ export default function Import() {
 
         <Card>
           <BlockStack gap="300">
-            <Text as="h2" variant="headingMd">Scrape Supplier Website</Text>
+            <Text as="h2" variant="headingMd">
+              Scrape Supplier Website
+            </Text>
             <Text as="p" variant="bodyMd" tone="subdued">
-              Point SourceDesk at a supplier catalog URL to extract products automatically.
+              Point SourceDesk at a supplier catalog URL to extract products
+              automatically.
             </Text>
             {/* TODO: implement URL input form */}
             <Button url="">Scrape URL</Button>
@@ -82,7 +101,9 @@ export default function Import() {
         </Card>
 
         <Card>
-          <Text as="h2" variant="headingMd">Recent Imports</Text>
+          <Text as="h2" variant="headingMd">
+            Recent Imports
+          </Text>
           {recentImports.length === 0 && (
             <Text as="p" variant="bodyMd" tone="subdued">
               No imports yet.

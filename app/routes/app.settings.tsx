@@ -46,7 +46,9 @@ export default function Settings() {
           <BlockStack gap="400">
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">Store Configuration</Text>
+                <Text as="h2" variant="headingMd">
+                  Store Configuration
+                </Text>
                 <Text as="p" variant="bodyMd">
                   Niche: {config?.niche ?? "Not configured"}
                 </Text>
@@ -56,7 +58,9 @@ export default function Settings() {
 
             <Card>
               <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">Email Account</Text>
+                <Text as="h2" variant="headingMd">
+                  Email Account
+                </Text>
                 {emailAccount ? (
                   <BlockStack gap="200">
                     <Text as="p" variant="bodyMd">
@@ -64,8 +68,14 @@ export default function Settings() {
                     </Text>
                     <Badge tone="success">{emailAccount.provider}</Badge>
                     <form method="post">
-                      <input type="hidden" name="intent" value="disconnect-email" />
-                      <Button tone="critical" submit>Disconnect</Button>
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="disconnect-email"
+                      />
+                      <Button tone="critical" submit>
+                        Disconnect
+                      </Button>
                     </form>
                   </BlockStack>
                 ) : (
@@ -85,7 +95,9 @@ export default function Settings() {
         <Layout.Section variant="oneThird">
           <Card>
             <BlockStack gap="300">
-              <Text as="h2" variant="headingMd">Onboarding</Text>
+              <Text as="h2" variant="headingMd">
+                Onboarding
+              </Text>
               <Text as="p" variant="bodyMd" tone="subdued">
                 Re-run the setup wizard to update your configuration.
               </Text>

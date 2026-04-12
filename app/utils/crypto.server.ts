@@ -19,7 +19,9 @@ function getKey(): Buffer {
     if (process.env.NODE_ENV !== "production") {
       return crypto.scryptSync("dev-placeholder-key", "salt", 32);
     }
-    throw new Error("ENCRYPTION_KEY must be a 32-byte hex-encoded string (64 hex chars)");
+    throw new Error(
+      "ENCRYPTION_KEY must be a 32-byte hex-encoded string (64 hex chars)",
+    );
   }
   return Buffer.from(hex.slice(0, 64), "hex");
 }

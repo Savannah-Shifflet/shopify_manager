@@ -40,7 +40,10 @@ export const PLANS = {
 type PlanKey = keyof typeof PLANS;
 
 type GraphQLClient = {
-  graphql: (query: string, options?: { variables?: Record<string, unknown> }) => Promise<Response>;
+  graphql: (
+    query: string,
+    options?: { variables?: Record<string, unknown> },
+  ) => Promise<Response>;
 };
 
 const CREATE_SUBSCRIPTION_MUTATION = `#graphql
@@ -70,7 +73,7 @@ const CREATE_SUBSCRIPTION_MUTATION = `#graphql
 export async function createSubscription(
   admin: GraphQLClient,
   planKey: PlanKey,
-  returnUrl: string
+  returnUrl: string,
 ) {
   const plan = PLANS[planKey];
 

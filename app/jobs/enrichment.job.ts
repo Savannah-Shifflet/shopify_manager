@@ -9,7 +9,10 @@ import type { EnrichmentPayload } from "./queues";
 export async function processEnrichment(job: Job<EnrichmentPayload>) {
   const { shopDomain, productIds, priority } = job.data;
 
-  console.info({ shopDomain, productCount: productIds.length, priority }, "Starting enrichment");
+  console.info(
+    { shopDomain, productCount: productIds.length, priority },
+    "Starting enrichment",
+  );
 
   // TODO: implement enrichment pipeline
   // For each productId:

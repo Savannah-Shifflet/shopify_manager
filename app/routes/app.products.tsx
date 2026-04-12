@@ -20,7 +20,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const syncStatus = url.searchParams.get("syncStatus") ?? undefined;
   const enrichStatus = url.searchParams.get("enrichStatus") ?? undefined;
 
-  const products = await listProducts(session.shop, { syncStatus, enrichStatus });
+  const products = await listProducts(session.shop, {
+    syncStatus,
+    enrichStatus,
+  });
   return json({ products });
 }
 
@@ -30,11 +33,13 @@ export async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   if (intent === "bulk-enrich") {
-    const productIds = String(formData.get("productIds")).split(",").filter(Boolean);
+    const productIds = String(formData.get("productIds"))
+      .split(",")
+      .filter(Boolean);
     await enrichmentQueue.add(
       "bulk-enrich",
       { shopDomain: session.shop, productIds, priority: "batch" },
-      { priority: 2 }
+      { priority: 2 },
     );
     return json({ success: true });
   }
@@ -42,7 +47,10 @@ export async function action({ request }: ActionFunctionArgs) {
   return json({ success: true });
 }
 
-const ENRICH_BADGE: Record<string, "info" | "success" | "warning" | "critical" | "new" | "attention"> = {
+const ENRICH_BADGE: Record<
+  string,
+  "info" | "success" | "warning" | "critical" | "new" | "attention"
+> = {
   NOT_STARTED: "info",
   PENDING: "attention",
   RUNNING: "new",
@@ -50,7 +58,10 @@ const ENRICH_BADGE: Record<string, "info" | "success" | "warning" | "critical" |
   FAILED: "critical",
 };
 
-const SYNC_BADGE: Record<string, "info" | "success" | "warning" | "critical" | "new" | "attention"> = {
+const SYNC_BADGE: Record<
+  string,
+  "info" | "success" | "warning" | "critical" | "new" | "attention"
+> = {
   NEVER_SYNCED: "info",
   PENDING: "attention",
   SYNCED: "success",
@@ -62,10 +73,18 @@ export default function Products() {
   const { products } = useLoaderData<typeof loader>();
 
   const rows = products.map((p) => [
-    <Text key={`title-${p.id}`} as="span" variant="bodyMd">{p.title}</Text>,
-    <span key={`sku-${p.id}`} className="mono">{p.sku}</span>,
-    <Badge key={`enrich-${p.id}`} tone={ENRICH_BADGE[p.enrichStatus] ?? "info"}>{p.enrichStatus}</Badge>,
-    <Badge key={`sync-${p.id}`} tone={SYNC_BADGE[p.syncStatus] ?? "info"}>{p.syncStatus}</Badge>,
+    <Text key={`title-${p.id}`} as="span" variant="bodyMd">
+      {p.title}
+    </Text>,
+    <span key={`sku-${p.id}`} className="mono">
+      {p.sku}
+    </span>,
+    <Badge key={`enrich-${p.id}`} tone={ENRICH_BADGE[p.enrichStatus] ?? "info"}>
+      {p.enrichStatus}
+    </Badge>,
+    <Badge key={`sync-${p.id}`} tone={SYNC_BADGE[p.syncStatus] ?? "info"}>
+      {p.syncStatus}
+    </Badge>,
   ]);
 
   return (

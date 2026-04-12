@@ -15,32 +15,39 @@ if [ ! -f "$ROOT/node_modules/.bin/remix" ]; then
   exit 1
 fi
 
-if [ ! -f "$ROOT/dev.db" ]; then
-  echo "Error: dev.db not found. Run ./setup.sh first."
+if [ ! -f "$ROOT/prisma/dev.db" ]; then
+  echo "Error: prisma/dev.db not found. Run ./setup.sh first."
   exit 1
 fi
 
 # Check that required env vars are set
 source "$ROOT/.env" 2>/dev/null || true
-if [ -z "$SHOPIFY_CLIENT_ID" ] || [ -z "$SHOPIFY_CLIENT_SECRET" ] || [ -z "$SHOPIFY_STORE_DOMAIN" ]; then
+MISSING=()
+[ -z "$SHOPIFY_CLIENT_ID" ]     && MISSING+=("SHOPIFY_CLIENT_ID")
+[ -z "$SHOPIFY_CLIENT_SECRET" ] && MISSING+=("SHOPIFY_CLIENT_SECRET")
+[ -z "$SHOPIFY_STORE_DOMAIN" ]  && MISSING+=("SHOPIFY_STORE_DOMAIN")
+[ -z "$ANTHROPIC_API_KEY" ]     && MISSING+=("ANTHROPIC_API_KEY")
+[ -z "$ENCRYPTION_KEY" ]        && MISSING+=("ENCRYPTION_KEY")
+
+if [ "${#MISSING[@]}" -gt 0 ]; then
   echo ""
-  echo "⚠  Missing required Shopify credentials in .env:"
-  [ -z "$SHOPIFY_CLIENT_ID" ]     && echo "   SHOPIFY_CLIENT_ID is not set"
-  [ -z "$SHOPIFY_CLIENT_SECRET" ] && echo "   SHOPIFY_CLIENT_SECRET is not set"
-  [ -z "$SHOPIFY_STORE_DOMAIN" ]  && echo "   SHOPIFY_STORE_DOMAIN is not set"
+  echo "⚠  Missing required env vars in .env:"
+  for var in "${MISSING[@]}"; do
+    echo "   $var is not set"
+  done
   echo ""
   echo "Edit .env and re-run ./start.sh"
   exit 1
 fi
 
 # Check Redis is reachable
-REDIS_HOST=$(echo "${REDIS_URL:-redis://localhost:6379}" | sed 's|redis://||' | cut -d: -f1)
-REDIS_PORT=$(echo "${REDIS_URL:-redis://localhost:6379}" | sed 's|redis://||' | cut -d: -f2 | cut -d/ -f1)
-if ! nc -z "$REDIS_HOST" "${REDIS_PORT:-6379}" 2>/dev/null; then
+REDIS_HOST=$(echo "${REDIS_URL:-redis://localhost:6380}" | sed 's|redis://||' | cut -d: -f1)
+REDIS_PORT=$(echo "${REDIS_URL:-redis://localhost:6380}" | sed 's|redis://||' | cut -d: -f2 | cut -d/ -f1)
+if ! (echo > /dev/tcp/$REDIS_HOST/${REDIS_PORT:-6379}) 2>/dev/null; then
   echo ""
-  echo "⚠  Redis is not reachable at ${REDIS_URL:-redis://localhost:6379}"
+  echo "⚠  Redis is not reachable at ${REDIS_URL:-redis://localhost:6380}"
   echo "   Start Redis first:"
-  echo "   docker run -d -p 6379:6379 redis:7-alpine"
+  echo "   docker run -d -p 6380:6379 redis:7-alpine"
   echo ""
   echo "   Then re-run ./start.sh"
   exit 1
@@ -88,7 +95,7 @@ echo ""
 echo "[2/2] Starting BullMQ worker..."
 (
   cd "$ROOT"
-  npx tsx app/jobs/worker.ts 2>&1 | sed 's/^/  [worker] /'
+  npm run worker 2>&1 | sed 's/^/  [worker] /'
 ) &
 PIDS+=($!)
 

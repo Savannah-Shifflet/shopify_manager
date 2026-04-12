@@ -39,11 +39,18 @@ if [ ! -f "$ROOT/.env" ]; then
 
   echo ""
   echo "      ⚠  Before running start.sh, edit .env and fill in:"
-  echo "         SHOPIFY_CLIENT_ID      — from Dev Dashboard app credentials"
-  echo "         SHOPIFY_CLIENT_SECRET  — from Dev Dashboard app credentials"
-  echo "         SHOPIFY_STORE_DOMAIN   — e.g. your-store.myshopify.com"
-  echo "         ANTHROPIC_API_KEY      — from console.anthropic.com"
-  echo "         REDIS_URL              — redis://localhost:6379 (or your Redis URL)"
+  echo "         SHOPIFY_CLIENT_ID        — from Dev Dashboard app credentials"
+  echo "         SHOPIFY_CLIENT_SECRET    — from Dev Dashboard app credentials"
+  echo "         SHOPIFY_STORE_DOMAIN     — e.g. your-store.myshopify.com"
+  echo "         ANTHROPIC_API_KEY        — from console.anthropic.com"
+  echo "         REDIS_URL                — redis://localhost:6380 (or your Redis URL)"
+  echo "         GOOGLE_CLIENT_ID         — from Google Cloud Console OAuth credentials"
+  echo "         GOOGLE_CLIENT_SECRET     — from Google Cloud Console OAuth credentials"
+  echo "         GOOGLE_REDIRECT_URI      — must match your app URL + /settings/email/google/callback"
+  echo "         MICROSOFT_CLIENT_ID      — from Azure App Registration"
+  echo "         MICROSOFT_CLIENT_SECRET  — from Azure App Registration"
+  echo "         MICROSOFT_REDIRECT_URI   — must match your app URL + /settings/email/microsoft/callback"
+  echo "         TRACKING_BASE_URL        — your app's public URL (for email open tracking)"
 else
   echo "      .env already exists — skipping"
 fi
@@ -63,13 +70,16 @@ echo "[4/5] Setting up database..."
 npx prisma generate --silent 2>/dev/null || npx prisma generate
 echo "      ✓  Prisma client generated"
 
-# Run migrations (creates dev.db if it doesn't exist)
+# Run migrations (creates prisma/dev.db if it doesn't exist)
 # Use --skip-generate since we just generated above
-if npx prisma migrate dev --name init --skip-generate 2>/dev/null; then
-  echo "      ✓  Database migrated (dev.db created)"
+# --create-only is not used so the migration is also applied
+if npx prisma migrate dev --skip-generate 2>/dev/null; then
+  echo "      ✓  Database migrated (prisma/dev.db ready)"
 else
-  # Migrations may already be up-to-date on re-runs
-  echo "      ✓  Database already up-to-date"
+  # Fall back: apply any pending migrations without prompting for a migration name
+  npx prisma migrate deploy 2>/dev/null && \
+    echo "      ✓  Database already up-to-date" || \
+    echo "      ⚠  Migration step had warnings — check prisma/migrations/ manually"
 fi
 
 # ── 5. Playwright browsers (for Crawlee scraping) ─────────────────────────────
@@ -91,7 +101,7 @@ echo "  Next steps:"
 echo ""
 echo "  1. Edit .env and add your API keys (see prompts above)"
 echo "  2. Make sure Redis is running locally:"
-echo "     docker run -d -p 6379:6379 redis:7-alpine"
+echo "     docker run -d -p 6380:6379 redis:7-alpine"
 echo "  3. Run ./start.sh to start all services"
 echo "======================================"
 echo ""

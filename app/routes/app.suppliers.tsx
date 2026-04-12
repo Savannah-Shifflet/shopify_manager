@@ -36,7 +36,10 @@ export async function action({ request }: ActionFunctionArgs) {
   return json({ success: true });
 }
 
-const STATUS_BADGE: Record<string, "info" | "success" | "warning" | "critical" | "new" | "attention"> = {
+const STATUS_BADGE: Record<
+  string,
+  "info" | "success" | "warning" | "critical" | "new" | "attention"
+> = {
   LEAD: "info",
   CONTACTED: "attention",
   RESPONDED: "new",
@@ -52,7 +55,9 @@ export default function Suppliers() {
   const rows = suppliers.map((s) => [
     s.name,
     s.website ?? "—",
-    <Badge tone={STATUS_BADGE[s.status] ?? "info"} key={s.id}>{s.status}</Badge>,
+    <Badge tone={STATUS_BADGE[s.status] ?? "info"} key={s.id}>
+      {s.status}
+    </Badge>,
     new Date(s.createdAt).toLocaleDateString(),
   ]);
 

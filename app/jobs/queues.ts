@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
 import IORedis from "ioredis";
+import { env } from "~/env.server";
 
 // ─── Queue name constants (single source of truth) ───
 
@@ -46,8 +47,8 @@ export interface PriceMonitorPayload {
 
 export interface ShopifySyncPayload {
   shopDomain: string;
-  productId?: string;         // single product push
-  productShopifyId?: string;  // webhook-triggered update
+  productId?: string; // single product push
+  productShopifyId?: string; // webhook-triggered update
   mode?: "push" | "delete";
 }
 
@@ -66,7 +67,7 @@ export const DEFAULT_JOB_OPTIONS = {
 // ─── Redis connection ───
 
 function createRedisConnection() {
-  const url = process.env.REDIS_URL ?? "redis://localhost:6379";
+  const url = env.REDIS_URL;
   return new IORedis(url, {
     maxRetriesPerRequest: null, // required by BullMQ
   });
@@ -78,30 +79,30 @@ const connection = createRedisConnection();
 
 export const supplierDiscoveryQueue = new Queue<SupplierDiscoveryPayload>(
   QUEUES.SUPPLIER_DISCOVERY,
-  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS }
+  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS },
 );
 
-export const emailSyncQueue = new Queue<EmailSyncPayload>(
-  QUEUES.EMAIL_SYNC,
-  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS }
-);
+export const emailSyncQueue = new Queue<EmailSyncPayload>(QUEUES.EMAIL_SYNC, {
+  connection,
+  defaultJobOptions: DEFAULT_JOB_OPTIONS,
+});
 
 export const catalogScrapeQueue = new Queue<CatalogScrapePayload>(
   QUEUES.CATALOG_SCRAPE,
-  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS }
+  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS },
 );
 
-export const enrichmentQueue = new Queue<EnrichmentPayload>(
-  QUEUES.ENRICHMENT,
-  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS }
-);
+export const enrichmentQueue = new Queue<EnrichmentPayload>(QUEUES.ENRICHMENT, {
+  connection,
+  defaultJobOptions: DEFAULT_JOB_OPTIONS,
+});
 
 export const priceMonitorQueue = new Queue<PriceMonitorPayload>(
   QUEUES.PRICE_MONITOR,
-  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS }
+  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS },
 );
 
 export const shopifySyncQueue = new Queue<ShopifySyncPayload>(
   QUEUES.SHOPIFY_SYNC,
-  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS }
+  { connection, defaultJobOptions: DEFAULT_JOB_OPTIONS },
 );

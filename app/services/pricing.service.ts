@@ -5,7 +5,7 @@ import type { PriceAlert, PricingRule } from "@prisma/client";
 
 export async function listPriceAlerts(
   shopDomain: string,
-  filters: { status?: string } = {}
+  filters: { status?: string } = {},
 ) {
   return db.priceAlert.findMany({
     where: {
@@ -25,7 +25,7 @@ export async function createPriceAlert(
     newPrice: string;
     suggestedPrice?: string;
     mapViolation?: boolean;
-  }
+  },
 ) {
   return db.priceAlert.create({
     data: {
@@ -42,7 +42,7 @@ export async function createPriceAlert(
 export async function updatePriceAlertStatus(
   shopDomain: string,
   alertId: string,
-  status: "approved" | "rejected" | "auto_applied"
+  status: "approved" | "rejected" | "auto_applied",
 ) {
   return db.priceAlert.update({
     where: { id: alertId, shopDomain },
@@ -52,8 +52,12 @@ export async function updatePriceAlertStatus(
 
 // ─── Pricing Rules ───
 
+function roundCurrency(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 export async function listPricingRules(
-  shopDomain: string
+  shopDomain: string,
 ): Promise<PricingRule[]> {
   return db.pricingRule.findMany({
     where: { shopDomain, active: true },
@@ -69,7 +73,7 @@ export async function createPricingRule(
     markupType: "percentage" | "fixed";
     markupValue: string;
     priority?: number;
-  }
+  },
 ) {
   return db.pricingRule.create({
     data: {
@@ -89,7 +93,7 @@ export async function createPricingRule(
  */
 export async function fetchApplicableRule(
   shopDomain: string,
-  supplierId?: string | null
+  supplierId?: string | null,
 ): Promise<PricingRule | null> {
   if (supplierId) {
     const supplierRule = await db.pricingRule.findFirst({
@@ -109,17 +113,14 @@ export async function fetchApplicableRule(
 /**
  * Applies a pricing rule to a cost value and returns the suggested retail price.
  */
-export function applyPricingRule(
-  costStr: string,
-  rule: PricingRule
-): number {
+export function applyPricingRule(costStr: string, rule: PricingRule): number {
   const cost = parseFloat(costStr);
   const value = parseFloat(rule.markupValue);
 
   if (rule.markupType === "percentage") {
-    return cost * (1 + value / 100);
+    return roundCurrency(cost * (1 + value / 100));
   }
-  return cost + value;
+  return roundCurrency(cost + value);
 }
 
 // ─── Price History ───
@@ -129,7 +130,7 @@ export async function recordPriceChange(
   productId: string,
   oldPrice: string,
   newPrice: string,
-  source: "scrape" | "webhook" | "manual"
+  source: "scrape" | "webhook" | "manual",
 ) {
   return db.priceHistory.create({
     data: { shopDomain, productId, oldPrice, newPrice, source },
@@ -139,7 +140,7 @@ export async function recordPriceChange(
 export async function getPriceHistory(
   shopDomain: string,
   productId: string,
-  limit = 50
+  limit = 50,
 ) {
   return db.priceHistory.findMany({
     where: { shopDomain, productId },

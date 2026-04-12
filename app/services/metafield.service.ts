@@ -9,7 +9,10 @@
  */
 
 type GraphQLClient = {
-  graphql: (query: string, options?: { variables?: Record<string, unknown> }) => Promise<Response>;
+  graphql: (
+    query: string,
+    options?: { variables?: Record<string, unknown> },
+  ) => Promise<Response>;
 };
 
 const SET_METAFIELDS_MUTATION = `#graphql
@@ -48,16 +51,16 @@ const GET_METAFIELDS_QUERY = `#graphql
 `;
 
 export interface MetafieldInput {
-  ownerId: string;      // Shopify GID, e.g. "gid://shopify/Product/123"
+  ownerId: string; // Shopify GID, e.g. "gid://shopify/Product/123"
   namespace: string;
   key: string;
   value: string;
-  type: string;         // e.g. "single_line_text_field", "json", "list.single_line_text_field"
+  type: string; // e.g. "single_line_text_field", "json", "list.single_line_text_field"
 }
 
 export async function setMetafields(
   admin: GraphQLClient,
-  metafields: MetafieldInput[]
+  metafields: MetafieldInput[],
 ) {
   const response = await admin.graphql(SET_METAFIELDS_MUTATION, {
     variables: { metafields },
@@ -65,7 +68,12 @@ export async function setMetafields(
   const data = (await response.json()) as {
     data: {
       metafieldsSet: {
-        metafields: Array<{ id: string; namespace: string; key: string; value: string }>;
+        metafields: Array<{
+          id: string;
+          namespace: string;
+          key: string;
+          value: string;
+        }>;
         userErrors: Array<{ field: string; message: string }>;
       };
     };
@@ -82,13 +90,27 @@ export async function setMetafields(
 export async function getProductMetafields(
   admin: GraphQLClient,
   shopifyProductId: string,
-  namespace: string
+  namespace: string,
 ) {
   const response = await admin.graphql(GET_METAFIELDS_QUERY, {
     variables: { id: shopifyProductId, namespace },
   });
   const data = (await response.json()) as {
-    data: { product: { metafields: { edges: Array<{ node: { id: string; namespace: string; key: string; value: string; type: string } }> } } };
+    data: {
+      product: {
+        metafields: {
+          edges: Array<{
+            node: {
+              id: string;
+              namespace: string;
+              key: string;
+              value: string;
+              type: string;
+            };
+          }>;
+        };
+      };
+    };
   };
   return data.data.product.metafields.edges.map((e) => e.node);
 }

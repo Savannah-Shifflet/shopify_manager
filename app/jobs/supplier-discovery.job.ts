@@ -6,10 +6,15 @@ import type { SupplierDiscoveryPayload } from "./queues";
  * Scrapes directories, trade sites, and brand dealer pages to surface new leads.
  * Uses Crawlee (PlaywrightCrawler for JS-rendered pages, CheerioCrawler for static).
  */
-export async function processSupplierDiscovery(job: Job<SupplierDiscoveryPayload>) {
+export async function processSupplierDiscovery(
+  job: Job<SupplierDiscoveryPayload>,
+) {
   const { shopDomain, keywords = [], triggeredBy } = job.data;
 
-  console.info({ shopDomain, keywords, triggeredBy }, "Starting supplier discovery");
+  console.info(
+    { shopDomain, keywords, triggeredBy },
+    "Starting supplier discovery",
+  );
 
   // TODO: implement discovery pipeline
   // 1. Build search queries from shopDomain's niche config + keywords

@@ -35,11 +35,13 @@ export async function exchangeMicrosoftCode(code: string) {
         client_secret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
         scope: "offline_access Mail.Send Mail.Read",
       }),
-    }
+    },
   );
 
   if (!response.ok) {
-    throw new Error(`Microsoft token exchange failed: ${await response.text()}`);
+    throw new Error(
+      `Microsoft token exchange failed: ${await response.text()}`,
+    );
   }
 
   const data = (await response.json()) as {
@@ -69,7 +71,7 @@ export async function refreshMicrosoftToken(refreshToken: string) {
         client_secret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
         scope: "offline_access Mail.Send Mail.Read",
       }),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -94,7 +96,7 @@ export async function refreshMicrosoftToken(refreshToken: string) {
  */
 export async function sendOutlookMessage(
   accessToken: string,
-  message: { to: string; subject: string; body: string }
+  message: { to: string; subject: string; body: string },
 ) {
   const response = await fetch(`${GRAPH_BASE}/me/sendMail`, {
     method: "POST",
@@ -106,9 +108,7 @@ export async function sendOutlookMessage(
       message: {
         subject: message.subject,
         body: { contentType: "HTML", content: message.body },
-        toRecipients: [
-          { emailAddress: { address: message.to } },
-        ],
+        toRecipients: [{ emailAddress: { address: message.to } }],
       },
       saveToSentItems: true,
     }),

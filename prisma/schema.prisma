@@ -55,6 +55,19 @@ model MerchantConfig {
   @@index([shopDomain])
 }
 
+model DescriptionTemplate {
+  id          String   @id @default(cuid())
+  shopDomain  String
+  name        String
+  sections    String   @default("[]") // JSON: { tag, title, hint, required }[]
+  isDefault   Boolean  @default(false)
+  productType String?  // null = applies globally; set to product category string for type-specific
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shopDomain])
+}
+
 // ─── Suppliers ───
 
 model Supplier {
@@ -240,4 +253,19 @@ model PriceMonitorConfig {
   updatedAt     DateTime  @updatedAt
 
   @@index([shopDomain])
+}
+
+// ─── Audit Log ───
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  shopDomain String
+  action     String   // e.g. "email.sent", "ai.accepted", "ai.rejected", "product.synced", "price.approved"
+  entityType String   // "supplier" | "product" | "priceAlert" | "emailSequence"
+  entityId   String
+  metadata   String   @default("{}") // JSON: arbitrary context
+  createdAt  DateTime @default(now())
+
+  @@index([shopDomain])
+  @@index([shopDomain, entityType, entityId])
 }

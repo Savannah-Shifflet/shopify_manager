@@ -261,7 +261,7 @@ model AuditLog {
   id         String   @id @default(cuid())
   shopDomain String
   action     String   // e.g. "email.sent", "ai.accepted", "ai.rejected", "product.synced", "price.approved"
-  entityType String   // "supplier" | "product" | "priceAlert" | "emailSequence"
+  entityType String   // e.g. "supplier" | "product" | "priceAlert" | "emailSequence"
   entityId   String
   metadata   String   @default("{}") // JSON: arbitrary context
   createdAt  DateTime @default(now())

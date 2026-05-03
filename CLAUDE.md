@@ -253,6 +253,7 @@ shopify_manager/
 │   │   ├── import.service.ts           # CSV/Excel parsing + column mapping
 │   │   ├── scrape.service.ts           # Crawlee-based scraping (Playwright + Cheerio) + Redis scrape cache
 │   │   ├── enrichment.service.ts       # Claude AI enrichment pipeline + token usage logging
+│   │   ├── description-template.service.ts # CRUD for DescriptionTemplate (multi-template, per productType)
 │   │   ├── ai-acceptance.service.ts    # ACCEPTANCE_MAP + applyAiAcceptance()
 │   │   ├── metafield.service.ts        # Shopify metafield read/write helpers
 │   │   ├── pricing.service.ts          # Rules + alerts + price history

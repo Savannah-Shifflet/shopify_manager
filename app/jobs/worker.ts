@@ -14,7 +14,9 @@ import { processEnrichment } from "./enrichment.job";
 import { processPriceMonitor } from "./price-monitor.job";
 import { processShopifySync } from "./shopify-sync.job";
 
-const connection = new IORedis(env.REDIS_URL, {
+const connection = new IORedis(
+  process.env.REDIS_URL ?? "redis://localhost:6379",
+  {
     maxRetriesPerRequest: null,
   },
 );

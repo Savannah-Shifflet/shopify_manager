@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { Job } from "bullmq";
 import type { EmailSyncPayload } from "./queues";
 import db from "~/db.server";
@@ -57,39 +58,60 @@ export async function processEmailSync(job: Job<EmailSyncPayload>) {
   await job.updateProgress(50);
 
   let matched = 0;
+  let skippedErrors = 0;
   for (const message of messages) {
-    const supplierId = emailToSupplier.get(message.from.toLowerCase());
-    if (!supplierId) continue;
+    try {
+      const supplierId = emailToSupplier.get(message.from.toLowerCase());
+      if (!supplierId) continue;
 
-    if (message.messageId) {
+      // Some auto-replies, list footers, and bulk MTAs omit Message-ID.
+      // Synthesize a stable dedup key from sender/subject/body so the row
+      // isn't re-inserted on every 30-min poll (fetchUnseenEmails uses a
+      // 7-day window, not the unseen flag).
+      const dedupKey =
+        message.messageId ??
+        `hash:${createHash("sha256")
+          .update(
+            `${message.from}|${message.subject}|${message.receivedAt.toISOString()}|${message.body.slice(0, 500)}`,
+          )
+          .digest("hex")}`;
+
       const existing = await db.supplierEmail.findFirst({
-        where: { shopDomain, messageId: message.messageId },
+        where: { shopDomain, messageId: dedupKey },
       });
       if (existing) continue;
-    }
 
-    await recordReceivedEmail(shopDomain, supplierId, {
-      subject: message.subject,
-      body: message.body,
-      receivedAt: message.receivedAt,
-      messageId: message.messageId,
-    });
+      await recordReceivedEmail(shopDomain, supplierId, {
+        subject: message.subject,
+        body: message.body,
+        receivedAt: message.receivedAt,
+        messageId: dedupKey,
+      });
 
-    await pauseSupplierSequence(shopDomain, supplierId);
+      await pauseSupplierSequence(shopDomain, supplierId);
 
-    const supplier = suppliers.find((s) => s.id === supplierId);
-    if (supplier?.status === "CONTACTED") {
-      await db.supplier.update({
-        where: { id: supplierId, shopDomain },
+      // Status filter in `where` makes this a CAS: a merchant who manually
+      // advanced the supplier to NEGOTIATING mid-job is not silently rolled
+      // back to RESPONDED.
+      await db.supplier.updateMany({
+        where: { id: supplierId, shopDomain, status: "CONTACTED" },
         data: { status: "RESPONDED" },
       });
-    }
 
-    matched++;
+      matched++;
+    } catch (err) {
+      // Per-message isolation: one bad message must not abort the loop and
+      // strand the rest for 30 minutes until the next poll.
+      skippedErrors++;
+      console.error(
+        { shopDomain, messageId: message.messageId, err },
+        "Email sync: failed to process message, continuing",
+      );
+    }
   }
 
   console.info(
-    { shopDomain, totalMessages: messages.length, matched },
+    { shopDomain, totalMessages: messages.length, matched, skippedErrors },
     "Email sync complete",
   );
   await job.updateProgress(100);

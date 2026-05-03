@@ -28,7 +28,12 @@ export async function createTemplate(
   shopDomain: string,
   data: {
     name: string;
-    sections: Array<{ tag: string; title: string; hint: string; required: boolean }>;
+    sections: Array<{
+      tag: string;
+      title: string;
+      hint: string;
+      required: boolean;
+    }>;
     isDefault?: boolean;
     productType?: string;
   },
@@ -49,7 +54,12 @@ export async function updateTemplate(
   id: string,
   data: Partial<{
     name: string;
-    sections: Array<{ tag: string; title: string; hint: string; required: boolean }>;
+    sections: Array<{
+      tag: string;
+      title: string;
+      hint: string;
+      required: boolean;
+    }>;
     isDefault: boolean;
     productType: string | null;
   }>,
@@ -58,7 +68,9 @@ export async function updateTemplate(
     where: { id, shopDomain },
     data: {
       ...(data.name !== undefined && { name: data.name }),
-      ...(data.sections !== undefined && { sections: JSON.stringify(data.sections) }),
+      ...(data.sections !== undefined && {
+        sections: JSON.stringify(data.sections),
+      }),
       ...(data.isDefault !== undefined && { isDefault: data.isDefault }),
       ...(data.productType !== undefined && { productType: data.productType }),
     },

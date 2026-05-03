@@ -32,96 +32,96 @@ Design system: `DESIGN.md`
 
 ### Core Framework
 
-| Technology | Version | Purpose |
-|---|---|---|
-| **TypeScript** | ~5.x | Strict typing across the entire codebase — no `any`, prefer `unknown` |
-| **Remix (React Router v7)** | Latest | Full-stack framework — loaders/actions on server, React on client. Shopify's officially recommended framework. |
-| **Node.js** | 20 LTS | Runtime. Do not use Bun or Deno. |
+| Technology                  | Version | Purpose                                                                                                        |
+| --------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| **TypeScript**              | ~5.x    | Strict typing across the entire codebase — no `any`, prefer `unknown`                                          |
+| **Remix (React Router v7)** | Latest  | Full-stack framework — loaders/actions on server, React on client. Shopify's officially recommended framework. |
+| **Node.js**                 | 20 LTS  | Runtime. Do not use Bun or Deno.                                                                               |
 
 ### Shopify Integration
 
-| Technology | Purpose |
-|---|---|
-| **`@shopify/shopify-app-remix`** | Handles Shopify OAuth, session token validation (JWT), and GraphQL client instantiation. The `authenticate.admin(request)` call is the gate to every protected route. |
-| **`@shopify/shopify-app-session-storage-prisma`** | Stores Shopify OAuth sessions in PostgreSQL via Prisma. Required for multi-tenant session management. |
-| **`@shopify/app-bridge`** | Client-side SDK for embedded app communication within the Shopify Admin iframe (navigation, modals, toasts). |
-| **Shopify Polaris** | React UI component library — required for App Store approval. Never replace with a competing component library. |
-| **Shopify GraphQL Admin API** | Primary API for reading/writing products, variants, inventory, metafields, and billing. Prefer over REST for all operations. |
-| **Shopify CLI** | Local dev tunnel (`shopify app dev`), extension management, deployment. |
+| Technology                                        | Purpose                                                                                                                                                               |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`@shopify/shopify-app-remix`**                  | Handles Shopify OAuth, session token validation (JWT), and GraphQL client instantiation. The `authenticate.admin(request)` call is the gate to every protected route. |
+| **`@shopify/shopify-app-session-storage-prisma`** | Stores Shopify OAuth sessions in PostgreSQL via Prisma. Required for multi-tenant session management.                                                                 |
+| **`@shopify/app-bridge`**                         | Client-side SDK for embedded app communication within the Shopify Admin iframe (navigation, modals, toasts).                                                          |
+| **Shopify Polaris**                               | React UI component library — required for App Store approval. Never replace with a competing component library.                                                       |
+| **Shopify GraphQL Admin API**                     | Primary API for reading/writing products, variants, inventory, metafields, and billing. Prefer over REST for all operations.                                          |
+| **Shopify CLI**                                   | Extension management and deployment. Post-Jan 2026 auth uses `client_credentials` grant — no local tunnel required.                                                  |
 
 ### Email OAuth
 
-| Technology | Purpose |
-|---|---|
-| **Google OAuth 2.0 + Gmail API** | Gmail send + inbox read for supplier outreach. Scopes: `gmail.send`, `gmail.readonly`. Tokens are encrypted at rest and refreshed before use. |
-| **Microsoft OAuth 2.0 + Graph API** | Outlook/Microsoft 365 send + inbox read. Scopes: `Mail.Send`, `Mail.Read`. Tokens are encrypted at rest and refreshed before use. |
-| **Nodemailer** | SMTP send wrapper for Gmail (using OAuth tokens, not passwords). |
-| **imapflow** | Modern IMAP client for reply detection polling and inbox sync. Replaces legacy `node-imap`. |
+| Technology                          | Purpose                                                                                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Google OAuth 2.0 + Gmail API**    | Gmail send + inbox read for supplier outreach. Scopes: `gmail.send`, `gmail.readonly`. Tokens are encrypted at rest and refreshed before use. |
+| **Microsoft OAuth 2.0 + Graph API** | Outlook/Microsoft 365 send + inbox read. Scopes: `Mail.Send`, `Mail.Read`. Tokens are encrypted at rest and refreshed before use.             |
+| **Nodemailer**                      | SMTP send wrapper for Gmail (using OAuth tokens, not passwords).                                                                              |
+| **imapflow**                        | Modern IMAP client for reply detection polling and inbox sync. Replaces legacy `node-imap`.                                                   |
 
 ### Database & ORM
 
-| Technology | Purpose |
-|---|---|
-| **PostgreSQL 15+** | Primary relational database. All tables shop-scoped via `shopDomain` column. |
-| **Prisma 5+** | ORM — schema definition, migrations, and type-safe query builder. SQLite for local dev, PostgreSQL in production (configured via `DATABASE_URL`). |
+| Technology         | Purpose                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PostgreSQL 15+** | Primary relational database. All tables shop-scoped via `shopDomain` column.                                                                      |
+| **Prisma 5+**      | ORM — schema definition, migrations, and type-safe query builder. SQLite for local dev, PostgreSQL in production (configured via `DATABASE_URL`). |
 
 ### Background Jobs & Caching
 
-| Technology | Purpose |
-|---|---|
-| **Redis 7+** | Two roles: (1) BullMQ job persistence and (2) per-shop Shopify API rate limit tracking. Use Railway Redis add-on or Upstash in production. |
-| **BullMQ** | Async job queue. All heavy operations (scraping, AI enrichment, email sync, price monitoring, Shopify sync, webhook-triggered reconciliation) run as BullMQ jobs. Never do heavy work inside a loader, action, or webhook handler. |
+| Technology   | Purpose                                                                                                                                                                                                                            |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Redis 7+** | Two roles: (1) BullMQ job persistence and (2) per-shop Shopify API rate limit tracking. Use Railway Redis add-on or Upstash in production.                                                                                         |
+| **BullMQ**   | Async job queue. All heavy operations (scraping, AI enrichment, email sync, price monitoring, Shopify sync, webhook-triggered reconciliation) run as BullMQ jobs. Never do heavy work inside a loader, action, or webhook handler. |
 
 ### AI & Content
 
-| Technology | Purpose |
-|---|---|
+| Technology               | Purpose                                                                                                                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Anthropic Claude API** | AI content generation — product descriptions, titles, tags, attributes. Model: `claude-sonnet-4-5` (balance of quality and cost). Use `claude-haiku-4-5-20251001` for cheaper/faster batch operations. |
-| **`@anthropic-ai/sdk`** | Official TypeScript SDK for the Claude API. The enrichment service logs token usage per shop for cost tracking and uses Sonnet for single-item enrichment, Haiku for batch jobs. |
+| **`@anthropic-ai/sdk`**  | Official TypeScript SDK for the Claude API. The enrichment service logs token usage per shop for cost tracking and uses Sonnet for single-item enrichment, Haiku for batch jobs.                       |
 
 ### Email
 
-| Technology | Purpose |
-|---|---|
-| **Google OAuth 2.0 + Gmail API** | Gmail send + inbox read for supplier outreach. Scopes: `gmail.send`, `gmail.readonly`. |
-| **Microsoft OAuth 2.0 + Graph API** | Outlook/Microsoft 365 send + inbox read. Scopes: `Mail.Send`, `Mail.Read`. |
-| **Nodemailer** | SMTP send wrapper for Gmail (using OAuth tokens, not passwords). |
-| **imapflow** | Modern IMAP client for reply detection polling. Replaces legacy `node-imap`. |
+| Technology                          | Purpose                                                                                |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| **Google OAuth 2.0 + Gmail API**    | Gmail send + inbox read for supplier outreach. Scopes: `gmail.send`, `gmail.readonly`. |
+| **Microsoft OAuth 2.0 + Graph API** | Outlook/Microsoft 365 send + inbox read. Scopes: `Mail.Send`, `Mail.Read`.             |
+| **Nodemailer**                      | SMTP send wrapper for Gmail (using OAuth tokens, not passwords).                       |
+| **imapflow**                        | Modern IMAP client for reply detection polling. Replaces legacy `node-imap`.           |
 
 ### Web Scraping
 
-| Technology | Purpose |
-|---|---|
-| **Crawlee** | High-level scraping framework (Apify). Manages concurrency, retries, browser pools, and request queues. Used for all scraping jobs. |
-| **Playwright** | Browser automation backing Crawlee for JS-rendered pages (dealer portals, SPAs). |
-| **Cheerio** | Fast HTML parsing for static pages (saves browser resources when JS isn't needed). |
-| **imapflow** | Modern IMAP client for reply detection polling and inbox sync. Replaces legacy `node-imap`. |
+| Technology     | Purpose                                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Crawlee**    | High-level scraping framework (Apify). Manages concurrency, retries, browser pools, and request queues. Used for all scraping jobs. |
+| **Playwright** | Browser automation backing Crawlee for JS-rendered pages (dealer portals, SPAs).                                                    |
+| **Cheerio**    | Fast HTML parsing for static pages (saves browser resources when JS isn't needed).                                                  |
+| **imapflow**   | Modern IMAP client for reply detection polling and inbox sync. Replaces legacy `node-imap`.                                         |
 
 ### Image Processing
 
-| Technology | Purpose |
-|---|---|
-| **Sharp** | Image resizing, format conversion (WebP), and compression before uploading to Shopify via `stagedUploadsCreate`. |
+| Technology | Purpose                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Sharp**  | Image resizing, format conversion (WebP), and compression before uploading to Shopify via `stagedUploadsCreate`. |
 
 ### Validation & Parsing
 
-| Technology | Purpose |
-|---|---|
-| **Zod** | Runtime schema validation for: form data in actions, API response parsing, job payloads, and env var validation at startup. |
-| **xlsx / exceljs** | Parsing `.xlsx` and `.xls` supplier price sheets. `exceljs` for write operations if needed. |
-| **csv-parse** | Streaming CSV parsing for large supplier files. |
+| Technology         | Purpose                                                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| **Zod**            | Runtime schema validation for: form data in actions, API response parsing, job payloads, and env var validation at startup. |
+| **xlsx / exceljs** | Parsing `.xlsx` and `.xls` supplier price sheets. `exceljs` for write operations if needed.                                 |
+| **csv-parse**      | Streaming CSV parsing for large supplier files.                                                                             |
 
 ### Error Monitoring & Logging
 
-| Technology | Purpose |
-|---|---|
+| Technology | Purpose                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | **Sentry** | Error tracking and performance monitoring. Wrap the Remix entry point and worker entrypoint. Tag every error with `shopDomain`. |
-| **pino** | Structured JSON logging. Log level controlled by `LOG_LEVEL` env var. Always include `{ shopDomain, jobId }` in log context. |
+| **pino**   | Structured JSON logging. Log level controlled by `LOG_LEVEL` env var. Always include `{ shopDomain, jobId }` in log context.    |
 
 ### Hosting & Infrastructure
 
-| Technology | Purpose |
-|---|---|
+| Technology  | Purpose                                                                                                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Railway** | Hosting platform. Three Railway services: `web` (Remix server), `worker` (BullMQ drain), `cron` (repeatable discovery + price monitor triggers). Scale web and worker independently. |
 
 ---
@@ -227,16 +227,16 @@ shopify_manager/
 ├── app/
 │   ├── routes/
 │   │   ├── app._index.tsx              # Dashboard — metrics + quick actions
-│   │   ├── app.onboarding/             # First-install 5-step setup wizard
-│   │   ├── app.suppliers/              # Supplier list + discovery trigger
-│   │   ├── app.suppliers.$id/          # Supplier detail CRM view
-│   │   ├── app.suppliers.$id.emails/   # Full email thread per supplier
-│   │   ├── app.outreach/               # Email sequence builder + analytics
-│   │   ├── app.import/                 # Catalog import (CSV/Excel + web scrape)
-│   │   ├── app.products/               # Product list + enrichment queue
-│   │   ├── app.products.$id/           # Product detail + AI staging review
-│   │   ├── app.pricing/                # Alerts + rule builder + price history
-│   │   ├── app.settings/               # Store config, email OAuth, templates
+│   │   ├── app.onboarding.tsx          # First-install 5-step setup wizard
+│   │   ├── app.suppliers.tsx           # Supplier list + discovery trigger
+│   │   ├── app.suppliers.$id.tsx       # Supplier detail CRM view
+│   │   ├── app.suppliers.$id.emails.tsx # Full email thread per supplier
+│   │   ├── app.outreach.tsx            # Email sequence builder + analytics
+│   │   ├── app.import.tsx              # Catalog import (CSV/Excel + web scrape)
+│   │   ├── app.products.tsx            # Product list + enrichment queue
+│   │   ├── app.products.$id.tsx        # Product detail + AI staging review
+│   │   ├── app.pricing.tsx             # Alerts + rule builder + price history
+│   │   ├── app.settings.tsx            # Store config, email OAuth, templates
 │   │   └── webhooks.tsx                # Shopify webhook entry point
 │   ├── components/
 │   │   ├── layout/                     # Page shells, nav wrappers
@@ -328,11 +328,11 @@ Shopify ──► POST /webhooks
 
 Three Railway services, independently scalable:
 
-| Service | Command | Scales With |
-|---|---|---|
-| `web` | `npm run start` (Remix) | Request traffic |
-| `worker` | `npx tsx app/jobs/worker.ts` | Job queue depth |
-| (cron via BullMQ repeatable jobs) | Managed by worker | Fixed schedule |
+| Service                           | Command                      | Scales With     |
+| --------------------------------- | ---------------------------- | --------------- |
+| `web`                             | `npm run start` (Remix)      | Request traffic |
+| `worker`                          | `npx tsx app/jobs/worker.ts` | Job queue depth |
+| (cron via BullMQ repeatable jobs) | Managed by worker            | Fixed schedule  |
 
 ### Multi-Tenancy
 
@@ -495,12 +495,12 @@ enum Provider {
 
 ```typescript
 export const QUEUES = {
-  SUPPLIER_DISCOVERY: 'supplier-discovery',
-  EMAIL_SYNC:         'email-sync',
-  CATALOG_SCRAPE:     'catalog-scrape',
-  ENRICHMENT:         'enrichment',
-  PRICE_MONITOR:      'price-monitor',
-  SHOPIFY_SYNC:       'shopify-sync',
+  SUPPLIER_DISCOVERY: "supplier-discovery",
+  EMAIL_SYNC: "email-sync",
+  CATALOG_SCRAPE: "catalog-scrape",
+  ENRICHMENT: "enrichment",
+  PRICE_MONITOR: "price-monitor",
+  SHOPIFY_SYNC: "shopify-sync",
 } as const;
 ```
 
@@ -513,7 +513,7 @@ Every job payload includes `shopDomain` as a top-level field:
 interface EnrichmentJobPayload {
   shopDomain: string;
   productIds: string[];
-  priority: 'single' | 'batch';
+  priority: "single" | "batch";
 }
 ```
 
@@ -523,11 +523,11 @@ interface EnrichmentJobPayload {
 const DEFAULT_JOB_OPTIONS = {
   attempts: 5,
   backoff: {
-    type: 'exponential',
-    delay: 2000,  // 2s, 4s, 8s, 16s, 32s
+    type: "exponential",
+    delay: 2000, // 2s, 4s, 8s, 16s, 32s
   },
   removeOnComplete: { count: 100 },
-  removeOnFail:     { count: 500 },  // keep failed jobs for inspection
+  removeOnFail: { count: 500 }, // keep failed jobs for inspection
 };
 ```
 
@@ -535,19 +535,31 @@ const DEFAULT_JOB_OPTIONS = {
 
 ```typescript
 // Scheduled discovery — daily per shop (staggered by 5 min per shop to avoid thundering herd)
-await queue.add('discovery', { shopDomain }, {
-  repeat: { pattern: '0 8 * * *' },  // 8 AM UTC daily
-});
+await queue.add(
+  "discovery",
+  { shopDomain },
+  {
+    repeat: { pattern: "0 8 * * *" }, // 8 AM UTC daily
+  },
+);
 
 // Email sync — every 30 minutes per connected shop
-await queue.add('email-sync', { shopDomain }, {
-  repeat: { every: 30 * 60 * 1000 },
-});
+await queue.add(
+  "email-sync",
+  { shopDomain },
+  {
+    repeat: { every: 30 * 60 * 1000 },
+  },
+);
 
 // Price monitor — every 6 hours per supplier with scrape config
-await queue.add('price-monitor', { shopDomain, supplierId }, {
-  repeat: { every: 6 * 60 * 60 * 1000 },
-});
+await queue.add(
+  "price-monitor",
+  { shopDomain, supplierId },
+  {
+    repeat: { every: 6 * 60 * 60 * 1000 },
+  },
+);
 ```
 
 ---
@@ -556,15 +568,15 @@ await queue.add('price-monitor', { shopDomain, supplierId }, {
 
 ### Naming Conventions
 
-| Context | Convention | Example |
-|---|---|---|
-| Files (routes/components) | `kebab-case` | `supplier-detail.tsx` |
-| Variables / functions | `camelCase` | `getSupplierById()` |
-| DB models / TypeScript types | `PascalCase` | `Supplier`, `EmailAccount` |
-| Constants | `SCREAMING_SNAKE_CASE` | `MAX_RETRY_ATTEMPTS` |
-| GraphQL query strings | colocated in `queries/` subdir | `app/routes/app.products/queries/get-product.ts` |
-| Zod schemas | `Schema` suffix | `SupplierCreateSchema` |
-| BullMQ job payloads | `Payload` suffix | `EnrichmentJobPayload` |
+| Context                      | Convention                     | Example                                          |
+| ---------------------------- | ------------------------------ | ------------------------------------------------ |
+| Files (routes/components)    | `kebab-case`                   | `supplier-detail.tsx`                            |
+| Variables / functions        | `camelCase`                    | `getSupplierById()`                              |
+| DB models / TypeScript types | `PascalCase`                   | `Supplier`, `EmailAccount`                       |
+| Constants                    | `SCREAMING_SNAKE_CASE`         | `MAX_RETRY_ATTEMPTS`                             |
+| GraphQL query strings        | colocated in `queries/` subdir | `app/routes/app.products/queries/get-product.ts` |
+| Zod schemas                  | `Schema` suffix                | `SupplierCreateSchema`                           |
+| BullMQ job payloads          | `Payload` suffix               | `EnrichmentJobPayload`                           |
 
 ### Route Pattern (thin routes)
 
@@ -576,7 +588,7 @@ Routes are **thin**: authenticate, extract params, call service, return data. No
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { admin, session } = await authenticate.admin(request);
   const supplier = await getSupplierById(session.shop, params.id!);
-  if (!supplier) throw new Response('Not Found', { status: 404 });
+  if (!supplier) throw new Response("Not Found", { status: 404 });
   return json({ supplier });
 }
 
@@ -584,7 +596,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const parsed = SupplierUpdateSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return json({ errors: parsed.error.flatten() }, { status: 422 });
+  if (!parsed.success)
+    return json({ errors: parsed.error.flatten() }, { status: 422 });
   await updateSupplier(session.shop, params.id!, parsed.data);
   return json({ success: true });
 }
@@ -598,17 +611,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 // All service functions: shopDomain is always first arg, always required
 export async function getSupplierById(shopDomain: string, id: string) {
   return db.supplier.findFirst({
-    where: { id, shopDomain },  // shopDomain ALWAYS in where clause
+    where: { id, shopDomain }, // shopDomain ALWAYS in where clause
   });
 }
 
 export async function updateSupplier(
   shopDomain: string,
   id: string,
-  data: SupplierUpdate
+  data: SupplierUpdate,
 ) {
   return db.supplier.update({
-    where: { id, shopDomain },  // shopDomain in where, never just id
+    where: { id, shopDomain }, // shopDomain in where, never just id
     data,
   });
 }
@@ -619,19 +632,19 @@ export async function updateSupplier(
 ```typescript
 // Form action validation
 const SupplierUpdateSchema = z.object({
-  name:    z.string().min(1).max(200),
-  website: z.string().url().optional().or(z.literal('')),
-  status:  z.nativeEnum(SupplierStatus),
+  name: z.string().min(1).max(200),
+  website: z.string().url().optional().or(z.literal("")),
+  status: z.nativeEnum(SupplierStatus),
 });
 
 // Env var validation (run at startup in app/env.server.ts)
 const EnvSchema = z.object({
-  SHOPIFY_API_KEY:      z.string().min(1),
-  SHOPIFY_API_SECRET:   z.string().min(1),
-  DATABASE_URL:         z.string().url(),
-  REDIS_URL:            z.string().url(),
-  ANTHROPIC_API_KEY:    z.string().min(1),
-  GOOGLE_CLIENT_ID:     z.string().min(1),
+  SHOPIFY_CLIENT_ID: z.string().min(1),
+  SHOPIFY_CLIENT_SECRET: z.string().min(1),
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url(),
+  ANTHROPIC_API_KEY: z.string().min(1),
+  GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
   // ...
 });
@@ -640,23 +653,23 @@ export const env = EnvSchema.parse(process.env);
 
 ### Error Handling
 
-| Error Type | Pattern |
-|---|---|
-| Shopify API error | Catch, log with `{ shopDomain, operation }`, surface via Polaris `<Banner status="critical">` |
-| Validation error | Return `{ errors }` from action with 422 status; render inline with Polaris `<InlineError>` |
-| Webhook HMAC failure | Return 401 immediately — never enqueue |
-| Auth error | Let `authenticate.admin()` throw — it redirects to OAuth automatically. Do **not** catch. |
-| Job failure | BullMQ retries with backoff. After max attempts, job goes to failed state. Alert via Sentry. |
-| Rate limit (Shopify) | Exponential backoff in the job. Log remaining cost. Never throw to the user. |
+| Error Type           | Pattern                                                                                       |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| Shopify API error    | Catch, log with `{ shopDomain, operation }`, surface via Polaris `<Banner status="critical">` |
+| Validation error     | Return `{ errors }` from action with 422 status; render inline with Polaris `<InlineError>`   |
+| Webhook HMAC failure | Return 401 immediately — never enqueue                                                        |
+| Auth error           | Let `authenticate.admin()` throw — it redirects to OAuth automatically. Do **not** catch.     |
+| Job failure          | BullMQ retries with backoff. After max attempts, job goes to failed state. Alert via Sentry.  |
+| Rate limit (Shopify) | Exponential backoff in the job. Log remaining cost. Never throw to the user.                  |
 
 ### Sentry Context
 
 Always tag Sentry events with shop context:
 
 ```typescript
-import * as Sentry from '@sentry/remix';
+import * as Sentry from "@sentry/remix";
 
-Sentry.setTag('shopDomain', shopDomain);
+Sentry.setTag("shopDomain", shopDomain);
 Sentry.captureException(error, { extra: { jobId, operation } });
 ```
 
@@ -673,14 +686,14 @@ LEAD ──► CONTACTED ──► RESPONDED ──► NEGOTIATING ──► APP
            (any active state) ──────────────────────► INACTIVE
 ```
 
-| Transition | Trigger | Who |
-|---|---|---|
-| LEAD → CONTACTED | First outreach email sent | Automatic (email-sync job) |
-| CONTACTED → RESPONDED | Reply detected via IMAP | Automatic (email-sync job) |
-| RESPONDED → NEGOTIATING | Merchant marks as negotiating | Merchant action |
-| NEGOTIATING → APPROVED | Merchant marks as approved | Merchant action |
-| Any → REJECTED | Merchant rejects | Merchant action |
-| Any → INACTIVE | Merchant deactivates | Merchant action |
+| Transition              | Trigger                       | Who                        |
+| ----------------------- | ----------------------------- | -------------------------- |
+| LEAD → CONTACTED        | First outreach email sent     | Automatic (email-sync job) |
+| CONTACTED → RESPONDED   | Reply detected via IMAP       | Automatic (email-sync job) |
+| RESPONDED → NEGOTIATING | Merchant marks as negotiating | Merchant action            |
+| NEGOTIATING → APPROVED  | Merchant marks as approved    | Merchant action            |
+| Any → REJECTED          | Merchant rejects              | Merchant action            |
+| Any → INACTIVE          | Merchant deactivates          | Merchant action            |
 
 **Never skip or invent new statuses.** The state machine is the authoritative source.
 
@@ -726,7 +739,7 @@ Never write structured content (tables, lists, sectioned content) into `body_htm
 
 async function getValidAccessToken(shopDomain: string): Promise<string> {
   const account = await db.emailAccount.findUniqueOrThrow({
-    where: { shopDomain }
+    where: { shopDomain },
   });
   if (account.expiresAt < new Date()) {
     throw new Error("Token refresh not yet implemented");
@@ -752,6 +765,7 @@ function shouldUseBrowser(url: string): boolean {
 ```
 
 Scraping rules:
+
 - All scrapers respect `robots.txt` where legally required.
 - Add a 1–3 second randomized delay between requests (`crawlee` handles this via `minConcurrency`/`maxConcurrency`).
 - Store scraped HTML in Redis with a 24h TTL under a URL-hash key for reruns without re-fetching.
@@ -764,26 +778,29 @@ Scraping rules:
 // Structure: system prompt (merchant config injected) + user prompt (product data)
 
 const systemPrompt = buildSystemPrompt({
-  niche:       merchantConfig.niche,
-  brandVoice:  merchantConfig.brandVoice,
-  template:    merchantConfig.contentTemplate,
-  examples:    merchantConfig.exampleDescriptions,  // few-shot
+  niche: merchantConfig.niche,
+  brandVoice: merchantConfig.brandVoice,
+  template: merchantConfig.contentTemplate,
+  examples: merchantConfig.exampleDescriptions, // few-shot
 });
 
 const userPrompt = buildProductPrompt(product);
 
 const response = await anthropic.messages.create({
-  model:      'claude-sonnet-4-5',
+  model: "claude-sonnet-4-5",
   max_tokens: 2048,
-  system:     systemPrompt,
-  messages:   [{ role: 'user', content: userPrompt }],
+  system: systemPrompt,
+  messages: [{ role: "user", content: userPrompt }],
 });
 
 // Parse response with Zod schema — never trust raw AI output shape
-const parsed = AiEnrichmentOutputSchema.safeParse(JSON.parse(extractJson(response)));
+const parsed = AiEnrichmentOutputSchema.safeParse(
+  JSON.parse(extractJson(response)),
+);
 ```
 
 AI rules:
+
 - Every AI call must have a Zod schema that validates the response before storing it.
 - Log token usage per shop for billing/cost tracking: `{ shopDomain, inputTokens, outputTokens, model }`.
 - AI calls in batch jobs use `claude-haiku-4-5-20251001` unless quality requires Sonnet.
@@ -798,7 +815,7 @@ AI rules:
 ```typescript
 // At the top of every loader and action in app/routes/app.*
 const { admin, session } = await authenticate.admin(request);
-const shopDomain = session.shop;  // always a string like "mystore.myshopify.com"
+const shopDomain = session.shop; // always a string like "mystore.myshopify.com"
 ```
 
 ### GraphQL Query Pattern
@@ -842,17 +859,25 @@ export async function action({ request }: ActionFunctionArgs) {
   // authenticate.webhook verifies HMAC and throws on failure
 
   switch (topic) {
-    case 'PRODUCTS_UPDATE':
-      await shopifySyncQueue.add('webhook-product-update', {
-        shopDomain: shop,
-        productShopifyId: String(payload.id),
-      }, { priority: 1 });
+    case "PRODUCTS_UPDATE":
+      await shopifySyncQueue.add(
+        "webhook-product-update",
+        {
+          shopDomain: shop,
+          productShopifyId: String(payload.id),
+        },
+        { priority: 1 },
+      );
       break;
-    case 'PRODUCTS_DELETE':
-      await shopifySyncQueue.add('webhook-product-delete', {
-        shopDomain: shop,
-        productShopifyId: String(payload.id),
-      }, { priority: 1 });
+    case "PRODUCTS_DELETE":
+      await shopifySyncQueue.add(
+        "webhook-product-delete",
+        {
+          shopDomain: shop,
+          productShopifyId: String(payload.id),
+        },
+        { priority: 1 },
+      );
       break;
     // ... GDPR topics are acknowledged and logged
   }
@@ -882,12 +907,12 @@ All UI work **must** follow `DESIGN.md` before writing any CSS or JSX. Non-negot
 
 ### Strategy
 
-| Layer | Tool | Pattern |
-|---|---|---|
-| Service unit tests | Vitest | Test service functions with a real test DB (SQLite in-memory). Never mock Prisma. |
+| Layer                   | Tool                       | Pattern                                                                                                                          |
+| ----------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Service unit tests      | Vitest                     | Test service functions with a real test DB (SQLite in-memory). Never mock Prisma.                                                |
 | Route integration tests | Vitest + `createRemixStub` | Render routes with stub loaders/actions. Use recorded API fixtures for Shopify API calls — never mock the GraphQL client itself. |
-| Job unit tests | Vitest | Test job processor logic in isolation. Use a real Redis test instance. |
-| E2E | Playwright | Critical user flows (onboarding, CSV import, AI accept). Run against local `shopify app dev`. |
+| Job unit tests          | Vitest                     | Test job processor logic in isolation. Use a real Redis test instance.                                                           |
+| E2E                     | Playwright                 | Critical user flows (onboarding, CSV import, AI accept). Run against local dev server (`npm run dev`).                           |
 
 ### Test Location
 
@@ -930,52 +955,52 @@ All four must pass. CI enforces this — broken builds block merges.
 
 ## Security
 
-| Concern | Mitigation |
-|---|---|
-| Multi-tenant data leak | `shopDomain` filter on every Prisma query — enforced at service layer |
-| Webhook spoofing | `authenticate.webhook()` verifies HMAC-SHA256. Never skip. |
-| OAuth token exposure | Tokens encrypted at rest (AES-256). Never log tokens. Never return them to the client. |
-| CSRF | Remix handles CSRF for form actions. Do not bypass with `method: 'GET'` mutations. |
-| XSS | React escapes by default. Never use `dangerouslySetInnerHTML` with untrusted content. |
-| SQL injection | Prisma parameterizes all queries. Never use raw SQL with interpolated user input. |
-| Scraping abuse | Rate-limit scrape jobs per shop. Never allow merchant-controlled scrape concurrency > 3. |
-| AI prompt injection | Sanitize supplier-provided content before inserting into AI prompts. |
+| Concern                | Mitigation                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| Multi-tenant data leak | `shopDomain` filter on every Prisma query — enforced at service layer                    |
+| Webhook spoofing       | `authenticate.webhook()` verifies HMAC-SHA256. Never skip.                               |
+| OAuth token exposure   | Tokens encrypted at rest (AES-256). Never log tokens. Never return them to the client.   |
+| CSRF                   | Remix handles CSRF for form actions. Do not bypass with `method: 'GET'` mutations.       |
+| XSS                    | React escapes by default. Never use `dangerouslySetInnerHTML` with untrusted content.    |
+| SQL injection          | Prisma parameterizes all queries. Never use raw SQL with interpolated user input.        |
+| Scraping abuse         | Rate-limit scrape jobs per shop. Never allow merchant-controlled scrape concurrency > 3. |
+| AI prompt injection    | Sanitize supplier-provided content before inserting into AI prompts.                     |
 
 ---
 
 ## Key Files
 
-| File | Purpose |
-|---|---|
-| `shopify.app.toml` | App config: API scopes, webhook subscriptions, app URL. Source of truth for Shopify CLI. |
-| `app/shopify.server.ts` | Shopify app initialization and `authenticate` export. Used in every protected route. |
-| `app/db.server.ts` | Prisma client singleton — import this for all DB access. |
-| `app/env.server.ts` | Zod-validated env vars — import `env` from here, never `process.env` directly. |
-| `prisma/schema.prisma` | Database schema. All models must include `shopDomain String`. |
-| `app/routes/webhooks.tsx` | Webhook entry point — verify HMAC, return 200, enqueue job, acknowledge GDPR webhooks. |
-| `app/jobs/worker.ts` | BullMQ worker entrypoint — run as a separate Railway service in production; registers all queue workers with graceful shutdown. |
-| `app/jobs/queues.ts` | Queue name constants, payload interfaces, and default job options — single source of truth. |
-| `app/ai/prompts/` | All Claude prompt templates — never inline prompt strings in service files. |
-| `PRD.md` | Full product requirements, feature scope, and persona details. |
-| `DESIGN.md` | Design system — colors, typography, component specs. Read before any UI work. |
+| File                      | Purpose                                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `shopify.app.toml`        | App config: API scopes, webhook subscriptions, app URL. Source of truth for Shopify CLI.                                        |
+| `app/shopify.server.ts`   | Shopify app initialization and `authenticate` export. Used in every protected route.                                            |
+| `app/db.server.ts`        | Prisma client singleton — import this for all DB access.                                                                        |
+| `app/env.server.ts`       | Zod-validated env vars — import `env` from here, never `process.env` directly.                                                  |
+| `prisma/schema.prisma`    | Database schema. All models must include `shopDomain String`.                                                                   |
+| `app/routes/webhooks.tsx` | Webhook entry point — verify HMAC, return 200, enqueue job, acknowledge GDPR webhooks.                                          |
+| `app/jobs/worker.ts`      | BullMQ worker entrypoint — run as a separate Railway service in production; registers all queue workers with graceful shutdown. |
+| `app/jobs/queues.ts`      | Queue name constants, payload interfaces, and default job options — single source of truth.                                     |
+| `app/ai/prompts/`         | All Claude prompt templates — never inline prompt strings in service files.                                                     |
+| `PRD.md`                  | Full product requirements, feature scope, and persona details.                                                                  |
+| `DESIGN.md`               | Design system — colors, typography, component specs. Read before any UI work.                                                   |
 
 ---
 
 ## On-Demand Context
 
-| Topic | Resource |
-|---|---|
-| Shopify App Bridge | https://shopify.dev/docs/api/app-bridge-library |
-| Shopify GraphQL Admin API | https://shopify.dev/docs/api/admin-graphql |
-| Shopify Billing API | https://shopify.dev/docs/apps/billing |
-| Shopify Bulk Operations | https://shopify.dev/docs/api/usage/bulk-operations/queries |
-| Polaris components | https://polaris.shopify.com/components |
-| Remix / React Router v7 | https://reactrouter.com/start/framework/installation |
-| Prisma docs | https://www.prisma.io/docs |
-| BullMQ docs | https://docs.bullmq.io |
-| Crawlee docs | https://crawlee.dev/docs/introduction |
-| Anthropic SDK | https://docs.anthropic.com/en/api/getting-started |
-| imapflow | https://imapflow.com |
+| Topic                     | Resource                                                   |
+| ------------------------- | ---------------------------------------------------------- |
+| Shopify App Bridge        | https://shopify.dev/docs/api/app-bridge-library            |
+| Shopify GraphQL Admin API | https://shopify.dev/docs/api/admin-graphql                 |
+| Shopify Billing API       | https://shopify.dev/docs/apps/billing                      |
+| Shopify Bulk Operations   | https://shopify.dev/docs/api/usage/bulk-operations/queries |
+| Polaris components        | https://polaris.shopify.com/components                     |
+| Remix / React Router v7   | https://reactrouter.com/start/framework/installation       |
+| Prisma docs               | https://www.prisma.io/docs                                 |
+| BullMQ docs               | https://docs.bullmq.io                                     |
+| Crawlee docs              | https://crawlee.dev/docs/introduction                      |
+| Anthropic SDK             | https://docs.anthropic.com/en/api/getting-started          |
+| imapflow                  | https://imapflow.com                                       |
 
 ---
 

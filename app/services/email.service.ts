@@ -161,8 +161,8 @@ export async function sendOutreachEmail(
       body: data.body,
       from: account.email,
     });
-    messageId = result.messageId;
-    threadId = result.threadId;
+    messageId = result.messageId ?? undefined;
+    threadId = result.threadId ?? undefined;
   } else {
     await sendOutlookMessage(accessToken, {
       to: primaryContact.email,

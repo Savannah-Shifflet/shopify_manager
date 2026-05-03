@@ -227,16 +227,16 @@ shopify_manager/
 ├── app/
 │   ├── routes/
 │   │   ├── app._index.tsx              # Dashboard — metrics + quick actions
-│   │   ├── app.onboarding/             # First-install 5-step setup wizard
-│   │   ├── app.suppliers/              # Supplier list + discovery trigger
-│   │   ├── app.suppliers.$id/          # Supplier detail CRM view
-│   │   ├── app.suppliers.$id.emails/   # Full email thread per supplier
-│   │   ├── app.outreach/               # Email sequence builder + analytics
-│   │   ├── app.import/                 # Catalog import (CSV/Excel + web scrape)
-│   │   ├── app.products/               # Product list + enrichment queue
-│   │   ├── app.products.$id/           # Product detail + AI staging review
-│   │   ├── app.pricing/                # Alerts + rule builder + price history
-│   │   ├── app.settings/               # Store config, email OAuth, templates
+│   │   ├── app.onboarding.tsx          # First-install 5-step setup wizard
+│   │   ├── app.suppliers.tsx           # Supplier list + discovery trigger
+│   │   ├── app.suppliers.$id.tsx       # Supplier detail CRM view
+│   │   ├── app.suppliers.$id.emails.tsx # Full email thread per supplier
+│   │   ├── app.outreach.tsx            # Email sequence builder + analytics
+│   │   ├── app.import.tsx              # Catalog import (CSV/Excel + web scrape)
+│   │   ├── app.products.tsx            # Product list + enrichment queue
+│   │   ├── app.products.$id.tsx        # Product detail + AI staging review
+│   │   ├── app.pricing.tsx             # Alerts + rule builder + price history
+│   │   ├── app.settings.tsx            # Store config, email OAuth, templates
 │   │   └── webhooks.tsx                # Shopify webhook entry point
 │   ├── components/
 │   │   ├── layout/                     # Page shells, nav wrappers
@@ -626,8 +626,8 @@ const SupplierUpdateSchema = z.object({
 
 // Env var validation (run at startup in app/env.server.ts)
 const EnvSchema = z.object({
-  SHOPIFY_API_KEY:      z.string().min(1),
-  SHOPIFY_API_SECRET:   z.string().min(1),
+  SHOPIFY_CLIENT_ID:     z.string().min(1),
+  SHOPIFY_CLIENT_SECRET: z.string().min(1),
   DATABASE_URL:         z.string().url(),
   REDIS_URL:            z.string().url(),
   ANTHROPIC_API_KEY:    z.string().min(1),

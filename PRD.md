@@ -137,10 +137,10 @@ The app lives entirely inside Shopify Admin as an embedded app. Merchants never 
 
 1. **Onboarding blocking granularity** — Which specific features are blocked (banner shown) before onboarding completes? Full app lockout? Per-feature? Current code has `onboardingDone` flag on `MerchantConfig` but blocking logic is not specified.
 2. **Notification delivery** — When a supplier replies or a price changes, how does the in-app notification reach the merchant? Polling? Shopify App Bridge notification API? `TRACKING_BASE_URL` env var suggests email pixel tracking exists — is Resend used for transactional alerts? (Not in current `.env.example`)
-3. **Audit log spec** — Phase 4 includes an audit log but there is no `AuditLog` model in the schema and no spec in Section 7. What actions are logged? Where is it stored?
+3. **Audit log spec** — ⚠️ PARTIAL (PR #10): `AuditLog` model now exists in the schema. Still open: which actions are logged, retention policy, actor identity, payload schema. `audit.service.ts` and call sites are deferred to Phase 4.
 4. **Extensions/content-blocks** — The Theme App Extension (`extensions/content-blocks/`) does not yet exist. This is the Liquid block for rendering metafield content as tabs/accordions in storefronts. When is this built? Phase 3 includes it.
 5. **IMAP vs Gmail/Graph API for reply detection** — Spec says "IMAP sync job" but Gmail API and Microsoft Graph API (REST) are the OAuth-based read mechanisms. Is IMAP actually used or is it Gmail API polling? This affects the `email-sync.job.ts` implementation.
-6. **`DescriptionTemplate` storage** — v1.0 PRD shows a dedicated `DescriptionTemplate` model. Actual schema stores `contentTemplate` as JSON inside `MerchantConfig`. Multiple templates per merchant (as specified) require the separate model — is this planned schema migration?
+6. **`DescriptionTemplate` storage** — ✅ RESOLVED (PR #10): dedicated `DescriptionTemplate` model + CRUD service shipped. Per-product-type defaults supported via `productType` column. Templates UI (Phase 3, Task 10) and migration of legacy `MerchantConfig.contentTemplate` JSON are remaining follow-ups.
 7. **Scraper rate limiting and politeness** — No spec for how frequently catalog scrapes or price monitor scrapes hit the same domain. What is the minimum delay between requests to the same host?
 8. **Email tracking pixel** — `TRACKING_BASE_URL` is in `.env.example`. How does open tracking work? Is there a `/track/open/:messageId` route? This is not in the route directory.
 9. **MAP enforcement UX** — When `mapHardBlock` is true in `StoreSettings` (not present in actual schema — see data model section), does the app block the sync entirely or just alert? Needs a clear error state spec.
@@ -456,9 +456,9 @@ model PriceMonitorConfig {
 }
 ```
 
-**Missing Models (v1.0 PRD specified, not in actual schema — require migration):**
-- `DescriptionTemplate` — Multiple templates per merchant. Currently only one template stored in `MerchantConfig.contentTemplate` JSON. See Open Question #6.
-- `AuditLog` — Audit log planned for Phase 4 but no model exists.
+**Recently Added Models (added in PR #10, migration `20260503182529_add_description_template_and_audit_log`):**
+- `DescriptionTemplate` — Multi-template support per shop. CRUD service in `app/services/description-template.service.ts`. Consumers (templates UI, enrichment integration) deferred. Resolves Open Question #6.
+- `AuditLog` — Schema in place; `app/services/audit.service.ts` and call sites are deferred. Spec for which actions are logged is still open — see Open Question #3.
 
 ### Environment Variables — Verified
 
@@ -559,8 +559,8 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 | Settings page (app.settings.tsx) | ✅ Done | |
 | Shopify billing integration (3 tiers + trial) | ✅ Done | billing.service.ts |
 | GDPR webhooks in webhooks.tsx | ✅ Done | |
-| Add `DescriptionTemplate` model to schema | ⚠️ Needed | Currently in MerchantConfig JSON — needs migration for multi-template support |
-| Add `AuditLog` model to schema | ⚠️ Phase 4 | Placeholder migration needed |
+| Add `DescriptionTemplate` model to schema | ✅ Done | PR #10, migration `20260503182529_…`. Multi-template builder UI (Phase 3, Task 10) and enrichment integration still pending. |
+| Add `AuditLog` model to schema | ✅ Done (model only) | PR #10. `audit.service.ts` and call sites deferred to Phase 4 (Tasks 4 + 14). |
 
 **Validation:** Fresh install → complete onboarding → connected email account → billing plan selected.
 
@@ -606,7 +606,7 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 | Import job tracking UI with real-time progress | ✅ Done | app.import.tsx |
 | Product list page (app.products.tsx) | ✅ Done | |
 | Product detail page (app.products.$id.tsx) | ✅ Done | |
-| Description template builder | ⚠️ Verify | contentTemplate in MerchantConfig — multi-template requires DescriptionTemplate migration |
+| Description template builder | ⚠️ Needed | `DescriptionTemplate` model + CRUD service exist (PR #10) — UI route `app/routes/app.templates.tsx` and enrichment-pipeline integration still pending. |
 | AI enrichment single + batch (enrichment.service.ts) | ✅ Done | |
 | AI staging field review + accept/reject UI | ✅ Done | ai-acceptance.service.ts |
 | Metafield writing on acceptance (metafield.service.ts) | ✅ Done | |
@@ -633,7 +633,7 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 | Auto-reprice (rules-based, MAP-gated) | ✅ Done | |
 | MAP violation alerts | ✅ Done | |
 | Price history view per product | ✅ Done | |
-| Audit log (actions + timestamps) | ⚠️ Needed | No AuditLog model — requires schema migration |
+| Audit log (actions + timestamps) | ⚠️ Needed | `AuditLog` model exists (PR #10) — `audit.service.ts` + call sites across services still pending. |
 | Error handling polish (Polaris banners, empty states) | ⚠️ Needed | |
 | Sentry integration for error monitoring | ⚠️ Needed | SENTRY_DSN in .env.example — integration unverified |
 | App Store listing preparation | ⚠️ Needed | Screenshots, description, privacy policy |
@@ -659,7 +659,7 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 | 10 | `PriceMonitorConfig` as separate model from `Supplier` | One supplier may eventually have multiple monitored URLs; separate model enables this without schema churn | v2.0 review |
 | 11 | Single-file `app.onboarding.tsx` (not directory) | Onboarding is a step-managed single page with state; Remix nested route directory not needed at current scope | v2.0 review |
 | 12 | `ENCRYPTION_KEY` over `APP_SECRET` | More descriptive; clearly signals it is a symmetric key, not a generic secret | v2.0 review |
-| 13 | `DescriptionTemplate` needs dedicated model (not MerchantConfig JSON) | Multi-template support (different templates per product type) was specified in v1.0; single JSON field in MerchantConfig does not support this — migration required | v2.0 review |
+| 13 | `DescriptionTemplate` is a dedicated model (not MerchantConfig JSON) | Multi-template support (different templates per product type) was specified in v1.0; single JSON field in MerchantConfig did not support this. Resolved in PR #10. | Resolved (PR #10) |
 
 ---
 
@@ -789,7 +789,7 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 | SQLite → PostgreSQL migration breaks schema assumptions | Medium | High | Use Prisma migrations throughout dev so production migration is additive; test with PostgreSQL in CI before launch |
 | Theme App Extension not built before sync goes live | Medium | Medium | Metafields are written correctly regardless; the Extension is a rendering layer only — content is not lost if Extension is delayed |
 | `SHOPIFY_STORE_DOMAIN` env var causing confusion in multi-tenant context | Low | Medium | Remove or clearly document as dev-only/legacy artifact; `shopDomain` always comes from authenticated session at runtime |
-| Multi-template support gap (DescriptionTemplate model missing) | High | Medium | Migration required before Phase 3 enrichment feature is complete; do not ship template builder against `MerchantConfig.contentTemplate` JSON only |
+| Multi-template support gap (DescriptionTemplate model missing) | ✅ Resolved (PR #10) | — | `DescriptionTemplate` model + CRUD service shipped in PR #10. Remaining work: templates UI (Phase 3, Task 10) and enrichment-pipeline integration. |
 
 ---
 
@@ -806,7 +806,7 @@ LOG_LEVEL=                  # ⚠️ Not in v1.0 PRD
 - **SSE / WebSockets for Enrichment Progress** — Replace polling at scale (>50 concurrent active merchants)
 - **Mobile-Optimized Layout** — Current target is desktop-first (Shopify Admin)
 - **Multiple EmailAccount per shop** — Current schema enforces `shopDomain @unique` on `EmailAccount` — one connected account per merchant. Multi-account support requires schema change.
-- **`DescriptionTemplate` multi-template** — Currently in `MerchantConfig.contentTemplate` JSON; move to dedicated model to allow per-product-type templates
+- **`DescriptionTemplate` multi-template** — ✅ Resolved in PR #10. Dedicated model + CRUD service shipped; per-product-type defaults supported via `productType` column. Remaining: templates UI and enrichment-pipeline integration.
 
 ---
 

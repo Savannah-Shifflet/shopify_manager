@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import db from "~/db.server";
+import { env } from "~/env.server";
 import { updateProduct, getMerchantConfig } from "~/services/supplier.service";
 import {
   buildSystemPrompt,
@@ -11,8 +12,8 @@ import {
 } from "~/ai/parsers/enrichment.parser";
 import pino from "pino";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const log = pino({ level: process.env.LOG_LEVEL ?? "info" });
+const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+const log = pino({ level: env.LOG_LEVEL });
 
 const MODELS = {
   quality: "claude-sonnet-4-5",

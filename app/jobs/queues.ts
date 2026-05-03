@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
 import IORedis from "ioredis";
+import { env } from "~/env.server";
 
 // ─── Queue name constants (single source of truth) ───
 
@@ -66,7 +67,7 @@ export const DEFAULT_JOB_OPTIONS = {
 // ─── Redis connection ───
 
 function createRedisConnection() {
-  const url = process.env.REDIS_URL ?? "redis://localhost:6379";
+  const url = env.REDIS_URL;
   return new IORedis(url, {
     maxRetriesPerRequest: null, // required by BullMQ
   });

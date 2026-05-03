@@ -49,6 +49,15 @@ Design system: `DESIGN.md`
 | **Shopify GraphQL Admin API** | Primary API for reading/writing products, variants, inventory, metafields, and billing. Prefer over REST for all operations. |
 | **Shopify CLI** | Local dev tunnel (`shopify app dev`), extension management, deployment. |
 
+### Email OAuth
+
+| Technology | Purpose |
+|---|---|
+| **Google OAuth 2.0 + Gmail API** | Gmail send + inbox read for supplier outreach. Scopes: `gmail.send`, `gmail.readonly`. Tokens are encrypted at rest and refreshed before use. |
+| **Microsoft OAuth 2.0 + Graph API** | Outlook/Microsoft 365 send + inbox read. Scopes: `Mail.Send`, `Mail.Read`. Tokens are encrypted at rest and refreshed before use. |
+| **Nodemailer** | SMTP send wrapper for Gmail (using OAuth tokens, not passwords). |
+| **imapflow** | Modern IMAP client for reply detection polling and inbox sync. Replaces legacy `node-imap`. |
+
 ### Database & ORM
 
 | Technology | Purpose |
@@ -61,14 +70,14 @@ Design system: `DESIGN.md`
 | Technology | Purpose |
 |---|---|
 | **Redis 7+** | Two roles: (1) BullMQ job persistence and (2) per-shop Shopify API rate limit tracking. Use Railway Redis add-on or Upstash in production. |
-| **BullMQ** | Async job queue. All heavy operations (scraping, AI enrichment, email sync, price monitoring, Shopify sync) run as BullMQ jobs. Never do heavy work inside a loader, action, or webhook handler. |
+| **BullMQ** | Async job queue. All heavy operations (scraping, AI enrichment, email sync, price monitoring, Shopify sync, webhook-triggered reconciliation) run as BullMQ jobs. Never do heavy work inside a loader, action, or webhook handler. |
 
 ### AI & Content
 
 | Technology | Purpose |
 |---|---|
 | **Anthropic Claude API** | AI content generation — product descriptions, titles, tags, attributes. Model: `claude-sonnet-4-5` (balance of quality and cost). Use `claude-haiku-4-5-20251001` for cheaper/faster batch operations. |
-| **`@anthropic-ai/sdk`** | Official TypeScript SDK for the Claude API. |
+| **`@anthropic-ai/sdk`** | Official TypeScript SDK for the Claude API. The enrichment service logs token usage per shop for cost tracking and uses Sonnet for single-item enrichment, Haiku for batch jobs. |
 
 ### Email
 
@@ -86,6 +95,7 @@ Design system: `DESIGN.md`
 | **Crawlee** | High-level scraping framework (Apify). Manages concurrency, retries, browser pools, and request queues. Used for all scraping jobs. |
 | **Playwright** | Browser automation backing Crawlee for JS-rendered pages (dealer portals, SPAs). |
 | **Cheerio** | Fast HTML parsing for static pages (saves browser resources when JS isn't needed). |
+| **imapflow** | Modern IMAP client for reply detection polling and inbox sync. Replaces legacy `node-imap`. |
 
 ### Image Processing
 
@@ -116,29 +126,14 @@ Design system: `DESIGN.md`
 
 ---
 
-## Required Shopify API Scopes
+## Shopify Auth Config
 
-Defined in `shopify.app.toml`. The app requires:
+This repo uses Dev Dashboard credentials and the new embedded auth strategy.
 
-```toml
-[access_scopes]
-scopes = [
-  "read_products",
-  "write_products",
-  "read_inventory",
-  "write_inventory",
-  "read_metaobject_definitions",
-  "write_metaobject_definitions",
-  "read_metaobjects",
-  "write_metaobjects",
-  "read_files",
-  "write_files",
-  "read_price_rules",
-  "write_price_rules",
-]
-```
-
-Billing uses `appSubscriptionCreate` — no additional scope needed, it's available to all apps.
+- `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET` come from the Dev Dashboard app credentials page
+- `SHOPIFY_STORE_DOMAIN` is the production app host used by `app/shopify.server.ts`
+- `SHOPIFY_ACCESS_TOKEN` is optional and only used if pre-provisioned
+- Scopes are configured in the Dev Dashboard UI, not in this repo
 
 ---
 
@@ -148,16 +143,16 @@ All env vars are validated at startup via Zod. Missing required vars crash immed
 
 ```bash
 # Shopify
-SHOPIFY_API_KEY=
-SHOPIFY_API_SECRET=
-SHOPIFY_APP_URL=              # Production URL of the Remix server
+SHOPIFY_CLIENT_ID=
+SHOPIFY_CLIENT_SECRET=
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+SHOPIFY_ACCESS_TOKEN=
 
 # Database
-DATABASE_URL=                 # PostgreSQL connection string (production)
-# Local dev uses SQLite — see prisma/schema.prisma provider block
+DATABASE_URL=file:./dev.db
 
 # Redis
-REDIS_URL=                    # Redis connection string
+REDIS_URL=redis://localhost:6380
 
 # Anthropic
 ANTHROPIC_API_KEY=
@@ -165,23 +160,26 @@ ANTHROPIC_API_KEY=
 # Google OAuth (for Gmail)
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=          # Must match registered redirect in Google Cloud Console
+GOOGLE_REDIRECT_URI=https://your-app-url.trycloudflare.com/settings/email/google/callback
 
 # Microsoft OAuth (for Outlook)
 MICROSOFT_CLIENT_ID=
 MICROSOFT_CLIENT_SECRET=
-MICROSOFT_REDIRECT_URI=       # Must match registered redirect in Azure App Registration
-MICROSOFT_TENANT_ID=          # Usually "common" for multi-tenant support
+MICROSOFT_REDIRECT_URI=https://your-app-url.trycloudflare.com/settings/email/microsoft/callback
+MICROSOFT_TENANT_ID=common
 
 # Error Monitoring
 SENTRY_DSN=
 
 # Email Tracking
-TRACKING_BASE_URL=            # Base URL for tracking pixel redirects (same as SHOPIFY_APP_URL)
+TRACKING_BASE_URL=https://your-app-url.trycloudflare.com
 
 # App Config
-NODE_ENV=production           # or development
-LOG_LEVEL=info                # pino log level: trace | debug | info | warn | error
+NODE_ENV=development
+LOG_LEVEL=info
+
+# Token Encryption
+ENCRYPTION_KEY=
 ```
 
 ---
@@ -189,11 +187,17 @@ LOG_LEVEL=info                # pino log level: trace | debug | info | warn | er
 ## Commands
 
 ```bash
-# Development (starts Remix dev server + Shopify tunnel)
-shopify app dev
+# Initial setup
+./setup.sh
+
+# Local start script
+./start.sh
+
+# Development server
+npm run dev
 
 # Start BullMQ worker separately in dev
-npx tsx app/jobs/worker.ts
+npm run worker
 
 # Build
 npm run build
@@ -201,12 +205,8 @@ npm run build
 # Type checking
 npm run typecheck
 
-# Database migrations
-npx prisma migrate dev       # create + apply migration locally
-npx prisma migrate deploy    # apply migrations in production
-npx prisma studio            # visual DB browser
-npx prisma validate          # validate schema without migrating
-npx prisma generate          # regenerate Prisma client after schema changes
+# Database validation
+npx prisma validate
 
 # Test
 npm run test
@@ -248,25 +248,25 @@ shopify_manager/
 │   ├── services/                       # All business logic (routes call services, not DB directly)
 │   │   ├── supplier.service.ts
 │   │   ├── discovery.service.ts
-│   │   ├── email.service.ts            # Gmail/Outlook OAuth + send/read
+│   │   ├── email.service.ts            # Gmail/Outlook OAuth + send/read + encrypted token handling
 │   │   ├── sequence.service.ts         # Email sequence logic + reply detection
 │   │   ├── import.service.ts           # CSV/Excel parsing + column mapping
-│   │   ├── scrape.service.ts           # Crawlee-based scraping (Playwright + Cheerio)
-│   │   ├── enrichment.service.ts       # Claude AI enrichment pipeline
+│   │   ├── scrape.service.ts           # Crawlee-based scraping (Playwright + Cheerio) + Redis scrape cache
+│   │   ├── enrichment.service.ts       # Claude AI enrichment pipeline + token usage logging
 │   │   ├── ai-acceptance.service.ts    # ACCEPTANCE_MAP + applyAiAcceptance()
 │   │   ├── metafield.service.ts        # Shopify metafield read/write helpers
 │   │   ├── pricing.service.ts          # Rules + alerts + price history
-│   │   ├── sync.service.ts             # Shopify product push (create/update)
+│   │   ├── sync.service.ts             # Shopify product push/reconciliation queue helpers
 │   │   └── billing.service.ts          # Shopify billing API + usage tracking
 │   ├── jobs/
 │   │   ├── worker.ts                   # BullMQ worker entrypoint (separate process)
-│   │   ├── queues.ts                   # Queue definitions and shared queue config
+│   │   ├── queues.ts                   # Queue definitions, payload types, default retries
 │   │   ├── supplier-discovery.job.ts   # Scrape directories for leads
 │   │   ├── email-sync.job.ts           # IMAP polling per shop (reply detection)
 │   │   ├── catalog-scrape.job.ts       # Scrape supplier product catalog pages
 │   │   ├── enrichment.job.ts           # Claude AI batch description generation
 │   │   ├── price-monitor.job.ts        # Scheduled supplier price checks
-│   │   └── shopify-sync.job.ts         # Push products to Shopify GraphQL API
+│   │   └── shopify-sync.job.ts         # Push products to Shopify GraphQL API / reconciliation jobs
 │   ├── ai/
 │   │   ├── prompts/                    # Prompt templates per feature
 │   │   └── parsers/                    # Response parsers (Zod schemas for AI output)
@@ -347,7 +347,7 @@ Three Railway services, independently scalable:
 
 - **Initial install**: Shopify GraphQL Bulk Operations API for large catalog imports (async export → S3 → parse).
 - **Ongoing**: Webhook subscriptions for real-time deltas.
-- **Reconciliation**: Repeatable BullMQ job runs nightly to catch missed webhooks.
+- **Reconciliation**: Repeatable BullMQ job runs nightly to catch missed webhooks; shop sync helpers can enqueue product push, bulk sync, and nightly reconciliation jobs.
 - **Idempotency**: All sync operations use SHA-256 hash comparison. Skip if content hasn't changed.
 
 ### API Rate Limits
@@ -694,12 +694,12 @@ Claude API ──► ai_title, ai_description, ai_tags, ai_attributes (staging)
                       │                  │
             applyAiAcceptance()     null staging fields
                       │             reset enrichStatus → NOT_STARTED
-            write to Shopify
-           (metafields, not body_html)
+            queue Shopify sync
+           (accepted content is promoted by sync helpers)
 ```
 
 - AI output **always** lands in `ai_*` staging fields first.
-- `applyAiAcceptance()` in `ai-acceptance.service.ts` is the **only** place that promotes staging to live.
+- `applyAiAcceptance()` in `ai-acceptance.service.ts` is the **only** place that marks accepted AI content ready for sync and enqueues the Shopify sync job.
 - `ACCEPTANCE_MAP` defines all field mappings in one central object — never inline promotion logic.
 - Rejecting AI: set staging fields to `null`, reset `enrichStatus → NOT_STARTED`.
 
@@ -721,27 +721,21 @@ Never write structured content (tables, lists, sectioned content) into `body_htm
 
 ```typescript
 // Tokens are encrypted at rest. Decrypt at use time.
-// Always check expiry and refresh before any API call.
+// Always check expiry before any API call.
 
 async function getValidAccessToken(shopDomain: string): Promise<string> {
   const account = await db.emailAccount.findUniqueOrThrow({
     where: { shopDomain }
   });
   if (account.expiresAt < new Date()) {
-    const refreshed = await refreshToken(account.provider, account.refreshToken);
-    await db.emailAccount.update({
-      where: { shopDomain },
-      data: {
-        accessToken:  encrypt(refreshed.accessToken),
-        refreshToken: encrypt(refreshed.refreshToken),
-        expiresAt:    refreshed.expiresAt,
-      }
-    });
-    return refreshed.accessToken;
+    throw new Error("Token refresh not yet implemented");
   }
   return decrypt(account.accessToken);
 }
 ```
+
+- Email account rows are shop-scoped and stored with encrypted tokens.
+- The current service throws on expired tokens until provider-specific refresh flows are wired in.
 
 ### Web Scraping Architecture
 
@@ -759,7 +753,7 @@ function shouldUseBrowser(url: string): boolean {
 Scraping rules:
 - All scrapers respect `robots.txt` where legally required.
 - Add a 1–3 second randomized delay between requests (`crawlee` handles this via `minConcurrency`/`maxConcurrency`).
-- Store scraped HTML in a `scrapeCache` Redis key with 24h TTL to allow reruns without re-fetching.
+- Store scraped HTML in Redis with a 24h TTL under a URL-hash key for reruns without re-fetching.
 - Never embed Playwright page handles in job payloads — serialize data as plain JSON.
 
 ### AI Prompt Structure
@@ -790,7 +784,7 @@ const parsed = AiEnrichmentOutputSchema.safeParse(JSON.parse(extractJson(respons
 
 AI rules:
 - Every AI call must have a Zod schema that validates the response before storing it.
-- Log token usage per shop for billing/cost tracking: `{ shopDomain, inputTokens, outputTokens }`.
+- Log token usage per shop for billing/cost tracking: `{ shopDomain, inputTokens, outputTokens, model }`.
 - AI calls in batch jobs use `claude-haiku-4-5-20251001` unless quality requires Sonnet.
 - Never call the AI API directly from a loader or action — always via an enrichment job.
 
@@ -850,10 +844,16 @@ export async function action({ request }: ActionFunctionArgs) {
     case 'PRODUCTS_UPDATE':
       await shopifySyncQueue.add('webhook-product-update', {
         shopDomain: shop,
-        productId:  payload.id,
-      });
+        productShopifyId: String(payload.id),
+      }, { priority: 1 });
       break;
-    // ... other topics
+    case 'PRODUCTS_DELETE':
+      await shopifySyncQueue.add('webhook-product-delete', {
+        shopDomain: shop,
+        productShopifyId: String(payload.id),
+      }, { priority: 1 });
+      break;
+    // ... GDPR topics are acknowledged and logged
   }
 
   return new Response(null, { status: 200 });
@@ -951,9 +951,9 @@ All four must pass. CI enforces this — broken builds block merges.
 | `app/db.server.ts` | Prisma client singleton — import this for all DB access. |
 | `app/env.server.ts` | Zod-validated env vars — import `env` from here, never `process.env` directly. |
 | `prisma/schema.prisma` | Database schema. All models must include `shopDomain String`. |
-| `app/routes/webhooks.tsx` | Webhook entry point — verify HMAC, return 200, enqueue job. |
-| `app/jobs/worker.ts` | BullMQ worker entrypoint — run as a separate Railway service in production. |
-| `app/jobs/queues.ts` | Queue name constants and default job options — single source of truth. |
+| `app/routes/webhooks.tsx` | Webhook entry point — verify HMAC, return 200, enqueue job, acknowledge GDPR webhooks. |
+| `app/jobs/worker.ts` | BullMQ worker entrypoint — run as a separate Railway service in production; registers all queue workers with graceful shutdown. |
+| `app/jobs/queues.ts` | Queue name constants, payload interfaces, and default job options — single source of truth. |
 | `app/ai/prompts/` | All Claude prompt templates — never inline prompt strings in service files. |
 | `PRD.md` | Full product requirements, feature scope, and persona details. |
 | `DESIGN.md` | Design system — colors, typography, component specs. Read before any UI work. |

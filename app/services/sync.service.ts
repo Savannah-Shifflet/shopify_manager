@@ -3,7 +3,7 @@ import { shopifySyncQueue } from "~/jobs/queues";
 
 /**
  * Enqueues a product push to Shopify.
- * Actual sync logic lives in shopify-sync.job.ts.
+ * The worker performs the actual Shopify write.
  */
 export async function queueProductSync(shopDomain: string, productId: string) {
   return shopifySyncQueue.add(

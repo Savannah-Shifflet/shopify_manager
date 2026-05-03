@@ -13,7 +13,7 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { getProductById } from "~/services/supplier.service";
-import { applyAiAcceptance } from "~/services/ai-acceptance.service";
+import { applyAiAcceptance, rejectAiContent } from "~/services/ai-acceptance.service";
 import { enrichmentQueue, shopifySyncQueue } from "~/jobs/queues";
 import { z } from "zod";
 
@@ -47,7 +47,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       return json({ success: true, message: "AI content applied" });
 
     case "reject-ai":
-      // TODO: call rejectAiContent service — reset staging fields + enrichStatus
+      await rejectAiContent(session.shop, params.id!);
       return json({ success: true, message: "AI content rejected" });
 
     case "sync":

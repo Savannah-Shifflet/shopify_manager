@@ -3,11 +3,11 @@
  * Shared helpers for supplier-discovery and catalog-scrape jobs.
  *
  * Uses PlaywrightCrawler for JS-rendered pages (SPAs, login-gated portals)
- * and CheerioCrawler for static HTML (saves browser resources).
+ * and CheerioCrawler for static HTML.
  *
  * Rules:
  * - Respect robots.txt where legally required
- * - 1–3 second randomized delay between requests (managed via Crawlee concurrency config)
+ * - Keep maxConcurrency capped at 3 per shop
  * - Cache scraped HTML in Redis for 24h (key: scrape:{url_hash})
  * - Never embed Playwright page handles in job payloads — serialize as plain JSON
  */
@@ -15,7 +15,7 @@
 import IORedis from "ioredis";
 import crypto from "node:crypto";
 
-const redis = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379");
+const redis = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6380");
 const SCRAPE_CACHE_TTL_SEC = 60 * 60 * 24; // 24 hours
 
 /**

@@ -5,6 +5,7 @@
 
 import { Worker, type Job } from "bullmq";
 import IORedis from "ioredis";
+import { env } from "~/env.server";
 import { QUEUES } from "./queues";
 import { processSupplierDiscovery } from "./supplier-discovery.job";
 import { processEmailSync } from "./email-sync.job";

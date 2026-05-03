@@ -1,5 +1,7 @@
 import db from "~/db.server";
 import type { EmailAccount, SupplierEmail } from "@prisma/client";
+import { sendGmailMessage } from "~/email/gmail.client";
+import { sendOutlookMessage } from "~/email/outlook.client";
 import { encrypt, decrypt } from "~/utils/crypto.server";
 
 // ─── Email Account management ───
@@ -124,7 +126,7 @@ export async function recordReceivedEmail(
 
 /**
  * Sends an outreach email to a supplier.
- * Requires a connected EmailAccount for the shop.
+ * Records the message only after the provider send succeeds.
  */
 export async function sendOutreachEmail(
   shopDomain: string,
@@ -134,6 +136,10 @@ export async function sendOutreachEmail(
   const supplier = await db.supplier.findFirstOrThrow({
     where: { id: supplierId, shopDomain },
   });
+  const account = await getEmailAccount(shopDomain);
+  if (!account) {
+    throw new Error("No email account connected for shop");
+  }
 
   const contacts = JSON.parse(supplier.contacts as string) as Array<{
     name?: string;
@@ -144,9 +150,30 @@ export async function sendOutreachEmail(
     throw new Error("No email contact found for supplier");
   }
 
-  // TODO: use gmail.client or outlook.client to send based on provider
-  // const accessToken = await getValidAccessToken(shopDomain);
-  // await sendViaProvider(accessToken, { to: primaryContact.email, ...data });
+  const accessToken = await getValidAccessToken(shopDomain);
+  let messageId: string | undefined;
+  let threadId: string | undefined;
 
-  await recordSentEmail(shopDomain, supplierId, data);
+  if (account.provider === "GMAIL") {
+    const result = await sendGmailMessage(accessToken, {
+      to: primaryContact.email,
+      subject: data.subject,
+      body: data.body,
+      from: account.email,
+    });
+    messageId = result.messageId;
+    threadId = result.threadId;
+  } else {
+    await sendOutlookMessage(accessToken, {
+      to: primaryContact.email,
+      subject: data.subject,
+      body: data.body,
+    });
+  }
+
+  await recordSentEmail(shopDomain, supplierId, {
+    ...data,
+    messageId,
+    threadId,
+  });
 }

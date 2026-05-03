@@ -52,6 +52,10 @@ export async function updatePriceAlertStatus(
 
 // ─── Pricing Rules ───
 
+function roundCurrency(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 export async function listPricingRules(
   shopDomain: string,
 ): Promise<PricingRule[]> {
@@ -114,9 +118,9 @@ export function applyPricingRule(costStr: string, rule: PricingRule): number {
   const value = parseFloat(rule.markupValue);
 
   if (rule.markupType === "percentage") {
-    return cost * (1 + value / 100);
+    return roundCurrency(cost * (1 + value / 100));
   }
-  return cost + value;
+  return roundCurrency(cost + value);
 }
 
 // ─── Price History ───

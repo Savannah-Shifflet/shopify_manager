@@ -36,11 +36,9 @@ export async function applyAiAcceptance(
     where: { id: productId, shopDomain },
   });
 
-  // Promote staging fields to the accepted columns
-  // (actual Shopify write happens in the sync job)
+  // Mark the product as out of sync so the Shopify sync job can push
+  // the accepted values on the next pass.
   await updateProduct(shopDomain, productId, {
-    // After acceptance, staging fields remain populated but syncStatus goes OUT_OF_SYNC
-    // signaling the sync job to push the accepted values
     syncStatus: "OUT_OF_SYNC",
   });
 

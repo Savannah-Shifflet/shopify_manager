@@ -473,7 +473,7 @@ SHOPIFY_ACCESS_TOKEN=       # Leave blank — fetched automatically via OAuth
 DATABASE_URL=               # SQLite in dev (file:./dev.db) / PostgreSQL in production
 
 # Redis
-REDIS_URL=                  # redis://localhost:6379
+REDIS_URL=                  # redis://localhost:6380
 
 # AI
 ANTHROPIC_API_KEY=

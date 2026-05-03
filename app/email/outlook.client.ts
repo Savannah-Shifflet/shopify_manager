@@ -4,15 +4,17 @@
  * Tenant: "common" for multi-tenant support (configured via MICROSOFT_TENANT_ID)
  */
 
+import { env } from "~/env.server";
+
 const AUTHORITY_BASE = "https://login.microsoftonline.com";
 const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
 
 export function getMicrosoftAuthUrl(state: string): string {
-  const tenantId = process.env.MICROSOFT_TENANT_ID ?? "common";
+  const tenantId = env.MICROSOFT_TENANT_ID;
   const params = new URLSearchParams({
-    client_id: process.env.MICROSOFT_CLIENT_ID ?? "",
+    client_id: env.MICROSOFT_CLIENT_ID,
     response_type: "code",
-    redirect_uri: process.env.MICROSOFT_REDIRECT_URI ?? "",
+    redirect_uri: env.MICROSOFT_REDIRECT_URI,
     response_mode: "query",
     scope: "offline_access Mail.Send Mail.Read",
     state,
@@ -21,7 +23,7 @@ export function getMicrosoftAuthUrl(state: string): string {
 }
 
 export async function exchangeMicrosoftCode(code: string) {
-  const tenantId = process.env.MICROSOFT_TENANT_ID ?? "common";
+  const tenantId = env.MICROSOFT_TENANT_ID;
   const response = await fetch(
     `${AUTHORITY_BASE}/${tenantId}/oauth2/v2.0/token`,
     {
@@ -30,9 +32,9 @@ export async function exchangeMicrosoftCode(code: string) {
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        redirect_uri: process.env.MICROSOFT_REDIRECT_URI ?? "",
-        client_id: process.env.MICROSOFT_CLIENT_ID ?? "",
-        client_secret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
+        redirect_uri: env.MICROSOFT_REDIRECT_URI,
+        client_id: env.MICROSOFT_CLIENT_ID,
+        client_secret: env.MICROSOFT_CLIENT_SECRET,
         scope: "offline_access Mail.Send Mail.Read",
       }),
     },
@@ -58,7 +60,7 @@ export async function exchangeMicrosoftCode(code: string) {
 }
 
 export async function refreshMicrosoftToken(refreshToken: string) {
-  const tenantId = process.env.MICROSOFT_TENANT_ID ?? "common";
+  const tenantId = env.MICROSOFT_TENANT_ID;
   const response = await fetch(
     `${AUTHORITY_BASE}/${tenantId}/oauth2/v2.0/token`,
     {
@@ -67,8 +69,8 @@ export async function refreshMicrosoftToken(refreshToken: string) {
       body: new URLSearchParams({
         grant_type: "refresh_token",
         refresh_token: refreshToken,
-        client_id: process.env.MICROSOFT_CLIENT_ID ?? "",
-        client_secret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
+        client_id: env.MICROSOFT_CLIENT_ID,
+        client_secret: env.MICROSOFT_CLIENT_SECRET,
         scope: "offline_access Mail.Send Mail.Read",
       }),
     },

@@ -47,7 +47,7 @@ Design system: `DESIGN.md`
 | **`@shopify/app-bridge`**                         | Client-side SDK for embedded app communication within the Shopify Admin iframe (navigation, modals, toasts).                                                          |
 | **Shopify Polaris**                               | React UI component library — required for App Store approval. Never replace with a competing component library.                                                       |
 | **Shopify GraphQL Admin API**                     | Primary API for reading/writing products, variants, inventory, metafields, and billing. Prefer over REST for all operations.                                          |
-| **Shopify CLI**                                   | Local dev tunnel (`shopify app dev`), extension management, deployment.                                                                                               |
+| **Shopify CLI**                                   | Extension management and deployment. Post-Jan 2026 auth uses `client_credentials` grant — no local tunnel required.                                                  |
 
 ### Email OAuth
 
@@ -912,7 +912,7 @@ All UI work **must** follow `DESIGN.md` before writing any CSS or JSX. Non-negot
 | Service unit tests      | Vitest                     | Test service functions with a real test DB (SQLite in-memory). Never mock Prisma.                                                |
 | Route integration tests | Vitest + `createRemixStub` | Render routes with stub loaders/actions. Use recorded API fixtures for Shopify API calls — never mock the GraphQL client itself. |
 | Job unit tests          | Vitest                     | Test job processor logic in isolation. Use a real Redis test instance.                                                           |
-| E2E                     | Playwright                 | Critical user flows (onboarding, CSV import, AI accept). Run against local `shopify app dev`.                                    |
+| E2E                     | Playwright                 | Critical user flows (onboarding, CSV import, AI accept). Run against local dev server (`npm run dev`).                           |
 
 ### Test Location
 

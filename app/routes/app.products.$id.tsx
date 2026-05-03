@@ -13,7 +13,10 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { getProductById } from "~/services/supplier.service";
-import { applyAiAcceptance, rejectAiContent } from "~/services/ai-acceptance.service";
+import {
+  applyAiAcceptance,
+  rejectAiContent,
+} from "~/services/ai-acceptance.service";
 import { enrichmentQueue, shopifySyncQueue } from "~/jobs/queues";
 import { z } from "zod";
 

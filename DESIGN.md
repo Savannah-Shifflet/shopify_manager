@@ -7,9 +7,11 @@
 ## 1. Visual Theme & Atmosphere
 
 ### Mood
+
 Product Hub is the tool luxury resellers trust when precision matters. The interface is dark by default — not to be trendy, but because it signals focus and reduces distraction for users managing high-stakes product data. Every surface is intentional: generous whitespace keeps complex data readable, while bold typographic moments and sharp indigo accents give the tool an edge that matches the high-ticket products users source and manage. The overall feeling is premium SaaS meets luxury editorial — think Linear's density discipline crossed with the typographic confidence of a fashion trade publication.
 
 ### Design Philosophy
+
 - **Whitespace is structural, not decorative** — spacing creates hierarchy; don't fill it
 - **Bold moments earn their place** — use weight and color to direct attention, not decorate
 - **Dark surfaces, light information** — high-contrast text on deep charcoal, never reversed
@@ -17,6 +19,7 @@ Product Hub is the tool luxury resellers trust when precision matters. The inter
 - **Consistency within Polaris** — push the palette and typography; respect the component system
 
 ### Inspiration References
+
 - **Linear**: Take the dark premium surface hierarchy, precise spacing, and typographic discipline. Their approach to information density in dark mode is the baseline.
 - **Vercel Dashboard**: Take the high-contrast minimal approach — black/white clarity, confident use of negative space, and restrained accent use.
 - **SSENSE / Net-a-Porter**: Take the editorial typographic weight and luxury spacing conventions — headings that command attention.
@@ -28,54 +31,55 @@ Product Hub is the tool luxury resellers trust when precision matters. The inter
 
 ### Primary Palette — Dark Mode (Default)
 
-| Name | Hex | Role |
-|---|---|---|
-| Indigo | `#7B68EE` | Primary action, CTAs, key highlights, active states |
-| Indigo Deep | `#6855E0` | Hover states on primary elements |
-| Obsidian | `#0C0D10` | Page background |
-| Slate | `#14161B` | Card and panel surface |
-| Slate Elevated | `#1C1F26` | Elevated panels, dropdowns, modals |
-| Divider | `#272B35` | Borders, row separators, dividers |
+| Name           | Hex       | Role                                                |
+| -------------- | --------- | --------------------------------------------------- |
+| Indigo         | `#7B68EE` | Primary action, CTAs, key highlights, active states |
+| Indigo Deep    | `#6855E0` | Hover states on primary elements                    |
+| Obsidian       | `#0C0D10` | Page background                                     |
+| Slate          | `#14161B` | Card and panel surface                              |
+| Slate Elevated | `#1C1F26` | Elevated panels, dropdowns, modals                  |
+| Divider        | `#272B35` | Borders, row separators, dividers                   |
 
 ### Primary Palette — Light Mode
 
-| Name | Hex | Role |
-|---|---|---|
-| Indigo | `#5B4FD4` | Primary action, CTAs, key highlights |
-| Indigo Light | `#7B68EE` | Hover states on primary elements |
-| Cloud | `#F6F7FA` | Page background |
-| White | `#FFFFFF` | Card and panel surface |
+| Name           | Hex       | Role                                      |
+| -------------- | --------- | ----------------------------------------- |
+| Indigo         | `#5B4FD4` | Primary action, CTAs, key highlights      |
+| Indigo Light   | `#7B68EE` | Hover states on primary elements          |
+| Cloud          | `#F6F7FA` | Page background                           |
+| White          | `#FFFFFF` | Card and panel surface                    |
 | White Elevated | `#FFFFFF` | Elevated panels (distinguished by shadow) |
-| Divider | `#E1E5EE` | Borders, row separators, dividers |
+| Divider        | `#E1E5EE` | Borders, row separators, dividers         |
 
 ### Semantic Colors
 
-| Name | Hex | Role |
-|---|---|---|
+| Name    | Hex       | Role                                     |
+| ------- | --------- | ---------------------------------------- |
 | Success | `#22C55E` | Positive states, synced, active supplier |
 | Warning | `#F59E0B` | Needs attention, incomplete product data |
-| Error | `#EF4444` | Destructive actions, sync failures |
-| Info | `#60A5FA` | Neutral information, tooltips, hints |
+| Error   | `#EF4444` | Destructive actions, sync failures       |
+| Info    | `#60A5FA` | Neutral information, tooltips, hints     |
 
 ### Text Colors — Dark Mode
 
-| Name | Hex | Role |
-|---|---|---|
-| Primary text | `#F0F1F5` | Body copy, headings |
-| Secondary text | `#8E95A6` | Labels, captions, metadata |
-| Muted text | `#525A6A` | Placeholders, disabled states |
-| Inverse text | `#0C0D10` | Text on indigo/light colored backgrounds |
+| Name           | Hex       | Role                                     |
+| -------------- | --------- | ---------------------------------------- |
+| Primary text   | `#F0F1F5` | Body copy, headings                      |
+| Secondary text | `#8E95A6` | Labels, captions, metadata               |
+| Muted text     | `#525A6A` | Placeholders, disabled states            |
+| Inverse text   | `#0C0D10` | Text on indigo/light colored backgrounds |
 
 ### Text Colors — Light Mode
 
-| Name | Hex | Role |
-|---|---|---|
-| Primary text | `#0C0D10` | Body copy, headings |
-| Secondary text | `#4A5264` | Labels, captions, metadata |
-| Muted text | `#8E95A6` | Placeholders, disabled states |
-| Inverse text | `#F0F1F5` | Text on indigo/dark backgrounds |
+| Name           | Hex       | Role                            |
+| -------------- | --------- | ------------------------------- |
+| Primary text   | `#0C0D10` | Body copy, headings             |
+| Secondary text | `#4A5264` | Labels, captions, metadata      |
+| Muted text     | `#8E95A6` | Placeholders, disabled states   |
+| Inverse text   | `#F0F1F5` | Text on indigo/dark backgrounds |
 
 ### Usage Rules
+
 - Never use Indigo (`#7B68EE`) as a large background surface — reserve it for buttons, badges, and accent marks only
 - Indigo on dark surfaces (`#14161B`) achieves ~4.8:1 contrast — always verify before use on text smaller than 16px
 - Semantic colors (success/warning/error) should always appear with an icon or label — never color alone to convey meaning
@@ -88,29 +92,30 @@ Product Hub is the tool luxury resellers trust when precision matters. The inter
 
 ### Font Families
 
-| Role | Family | Weights | Fallback |
-|---|---|---|---|
-| Display / Headings | Space Grotesk | 500, 600, 700 | system-ui, sans-serif |
-| Body / UI | Inter | 400, 500 | system-ui, sans-serif |
-| Monospace / Code | JetBrains Mono | 400 | Consolas, monospace |
+| Role               | Family         | Weights       | Fallback              |
+| ------------------ | -------------- | ------------- | --------------------- |
+| Display / Headings | Space Grotesk  | 500, 600, 700 | system-ui, sans-serif |
+| Body / UI          | Inter          | 400, 500      | system-ui, sans-serif |
+| Monospace / Code   | JetBrains Mono | 400           | Consolas, monospace   |
 
 > Both Space Grotesk and Inter are available on Google Fonts. JetBrains Mono is open source (SIL OFL license).
 
 ### Type Scale
 
-| Token | Size | Line Height | Weight | Usage |
-|---|---|---|---|---|
-| `display-xl` | 36px | 1.1 | 700 | Hero headings, empty states, onboarding |
-| `display-lg` | 28px | 1.2 | 700 | Page titles (Dashboard, Suppliers, Products) |
-| `display-md` | 22px | 1.3 | 600 | Section headings, card group titles |
-| `display-sm` | 18px | 1.4 | 600 | Card headings, subsection titles |
-| `body-lg` | 16px | 1.6 | 400 | Primary body text, descriptions |
-| `body-md` | 14px | 1.5 | 400 | Standard UI text, table cells |
-| `body-sm` | 13px | 1.5 | 400 | Secondary text, captions, helper text |
-| `label` | 12px | 1.4 | 500 | Form labels, column headers, tags, metadata |
-| `mono` | 13px | 1.5 | 400 | SKUs, product IDs, supplier codes, prices |
+| Token        | Size | Line Height | Weight | Usage                                        |
+| ------------ | ---- | ----------- | ------ | -------------------------------------------- |
+| `display-xl` | 36px | 1.1         | 700    | Hero headings, empty states, onboarding      |
+| `display-lg` | 28px | 1.2         | 700    | Page titles (Dashboard, Suppliers, Products) |
+| `display-md` | 22px | 1.3         | 600    | Section headings, card group titles          |
+| `display-sm` | 18px | 1.4         | 600    | Card headings, subsection titles             |
+| `body-lg`    | 16px | 1.6         | 400    | Primary body text, descriptions              |
+| `body-md`    | 14px | 1.5         | 400    | Standard UI text, table cells                |
+| `body-sm`    | 13px | 1.5         | 400    | Secondary text, captions, helper text        |
+| `label`      | 12px | 1.4         | 500    | Form labels, column headers, tags, metadata  |
+| `mono`       | 13px | 1.5         | 400    | SKUs, product IDs, supplier codes, prices    |
 
 ### Typography Rules
+
 - Space Grotesk at 700 weight is the "bold moment" — use it for page titles and key stat callouts; never dilute it with overuse
 - Body text is always Inter — Space Grotesk is only for headings and display sizes (`display-sm` and above)
 - Headings never exceed 2 lines; truncate with ellipsis at overflow
@@ -365,17 +370,17 @@ Modal footer:
 
 ### Spacing Scale
 
-| Token | Value | Usage |
-|---|---|---|
-| `space-1` | 4px | Tight gaps, icon-to-text padding, badge padding |
-| `space-2` | 8px | Inner component padding, compact list gaps |
-| `space-3` | 12px | Related element gaps, inline spacing |
-| `space-4` | 16px | Standard component padding, form field gaps |
-| `space-5` | 20px | Section internal gaps, button padding |
-| `space-6` | 24px | Card padding, group separators |
-| `space-8` | 32px | Major section spacing, modal padding |
-| `space-10` | 40px | Page section separation |
-| `space-12` | 48px | Hero / large section gaps, dashboard stat rows |
+| Token      | Value | Usage                                           |
+| ---------- | ----- | ----------------------------------------------- |
+| `space-1`  | 4px   | Tight gaps, icon-to-text padding, badge padding |
+| `space-2`  | 8px   | Inner component padding, compact list gaps      |
+| `space-3`  | 12px  | Related element gaps, inline spacing            |
+| `space-4`  | 16px  | Standard component padding, form field gaps     |
+| `space-5`  | 20px  | Section internal gaps, button padding           |
+| `space-6`  | 24px  | Card padding, group separators                  |
+| `space-8`  | 32px  | Major section spacing, modal padding            |
+| `space-10` | 40px  | Page section separation                         |
+| `space-12` | 48px  | Hero / large section gaps, dashboard stat rows  |
 
 ### Grid & Layout
 
@@ -391,6 +396,7 @@ Product edit layout: 8-column form + 4-column metadata sidebar
 ```
 
 ### Whitespace Philosophy
+
 - Let data breathe: minimum 24px between distinct content groups on the dashboard
 - Table rows need vertical rhythm — 14px cell padding top and bottom is the minimum
 - Never stack two cards without at least 16px gap; prefer 24px between card groups
@@ -402,13 +408,13 @@ Product edit layout: 8-column form + 4-column metadata sidebar
 
 ### Shadow Scale
 
-| Level | Value | Usage |
-|---|---|---|
-| `shadow-none` | none | Flat elements, table rows, inline components |
-| `shadow-sm` | `0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2)` | Cards in light mode, subtle lift |
-| `shadow-md` | `0 4px 8px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25)` | Floating panels, select dropdowns |
-| `shadow-lg` | `0 12px 24px rgba(0,0,0,0.45), 0 4px 8px rgba(0,0,0,0.3)` | Modals, popovers, command palette |
-| `shadow-xl` | `0 24px 48px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)` | Critical dialogs, full-screen overlays |
+| Level         | Value                                                     | Usage                                        |
+| ------------- | --------------------------------------------------------- | -------------------------------------------- |
+| `shadow-none` | none                                                      | Flat elements, table rows, inline components |
+| `shadow-sm`   | `0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2)`    | Cards in light mode, subtle lift             |
+| `shadow-md`   | `0 4px 8px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25)`  | Floating panels, select dropdowns            |
+| `shadow-lg`   | `0 12px 24px rgba(0,0,0,0.45), 0 4px 8px rgba(0,0,0,0.3)` | Modals, popovers, command palette            |
+| `shadow-xl`   | `0 24px 48px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)` | Critical dialogs, full-screen overlays       |
 
 ### Surface Hierarchy
 
@@ -426,6 +432,7 @@ Level 4 — Modal (light):             #FFFFFF + shadow-xl
 ```
 
 ### Border Usage
+
 - In **dark mode**: use borders (`#272B35`) as the primary separation mechanism — shadows are nearly invisible on dark surfaces and should only be used for true elevation (dropdowns, modals)
 - In **light mode**: use shadows for elevation (cards, panels) and borders for flat delineation (table rows, form fields)
 - Never use both a border AND a shadow on the same surface unless it is an interactive element in its focused state
@@ -435,6 +442,7 @@ Level 4 — Modal (light):             #FFFFFF + shadow-xl
 ## 7. Do's and Don'ts
 
 ### Do
+
 - Use `Space Grotesk 700` for page titles and key metric callouts — let the bold weight do the heavy lifting
 - Apply the indigo accent (`#7B68EE`) to exactly one primary action per view; it should always point to the most important next step
 - Use `mono` font for all SKUs, IDs, prices, and quantities so columns align visually in tables
@@ -442,6 +450,7 @@ Level 4 — Modal (light):             #FFFFFF + shadow-xl
 - Use status badges consistently across supplier CRM and product lists so users build pattern recognition
 
 ### Don't
+
 - Don't use Indigo as a background for large panels or sections — it breaks contrast and dilutes the accent's meaning
 - Don't add decorative borders or dividers between items that are already separated by spacing — pick one separation method
 - Don't mix Space Grotesk into body copy or small labels — below `display-sm` (18px), always use Inter
@@ -454,22 +463,24 @@ Level 4 — Modal (light):             #FFFFFF + shadow-xl
 
 ### Breakpoints
 
-| Name | Width | Behavior |
-|---|---|---|
-| `xs` | < 480px | Single column, full-width components, tab bar scrolls horizontally |
-| `sm` | 480–768px | 2-column stat grid, table collapses to card list |
-| `md` | 768–1024px | 3-column stat grid, sidebar drawers become bottom sheets |
-| `lg` | 1024–1280px | Standard layout — 12 column grid active |
-| `xl` | > 1280px | Max-width 1200px container, centered in content area |
+| Name | Width       | Behavior                                                           |
+| ---- | ----------- | ------------------------------------------------------------------ |
+| `xs` | < 480px     | Single column, full-width components, tab bar scrolls horizontally |
+| `sm` | 480–768px   | 2-column stat grid, table collapses to card list                   |
+| `md` | 768–1024px  | 3-column stat grid, sidebar drawers become bottom sheets           |
+| `lg` | 1024–1280px | Standard layout — 12 column grid active                            |
+| `xl` | > 1280px    | Max-width 1200px container, centered in content area               |
 
 > Note: This app embeds inside Shopify Admin. The Admin iframe controls the outer layout. Design for `lg` and `xl` as the primary viewport; `md` and below for smaller Admin windows or future standalone views.
 
 ### Touch Targets
+
 - Minimum tap target: 44×44px on any interactive element
 - Table row actions (edit, delete) must have at least 40px height; prefer 44px
 - Icon-only buttons require a visible tooltip on hover and sufficient tap area on touch
 
 ### Collapsing Strategy
+
 - Dashboard stat row: 4-col → 2-col at `md` → 1-col at `xs`
 - Supplier CRM detail drawer: side-by-side at `lg+` → full panel overlay at `md` and below
 - Product edit sidebar: 4-col metadata sidebar collapses into an accordion section at `md`
@@ -480,6 +491,7 @@ Level 4 — Modal (light):             #FFFFFF + shadow-xl
 ## 9. Agent Prompt Guide
 
 ### Quick Color Reference
+
 ```
 Dark Mode:
   Primary:     #7B68EE — main CTAs, active states, highlights
@@ -499,6 +511,7 @@ Light Mode:
 ```
 
 ### Typography Quick Reference
+
 ```
 Heading font: Space Grotesk, weights 500/600/700
 Body font:    Inter, weights 400/500
@@ -509,19 +522,25 @@ Scale:        [label: 12px/500] [sm: 13px] [base: 14px] [lg: 16px] [xl: 18px/600
 ### Ready-to-Use Agent Prompts
 
 **Building a new page:**
+
 > "Follow DESIGN.md. Page background #0C0D10, cards use #14161B surface with 1px #272B35 border and 12px border-radius. Page title in Space Grotesk 700 28px color #F0F1F5. Body text Inter 400 14px. Section headings Space Grotesk 600 22px. Page padding 32px. Use spacing tokens from DESIGN.md section 5."
 
 **Building the dashboard:**
+
 > "Dashboard per DESIGN.md. Stat cards: #14161B background, 12px radius, 28px padding, metric in Space Grotesk 700 28px #F0F1F5, label in Inter 500 12px uppercase #8E95A6. 4-column grid at desktop, 20px gap. Quick action buttons use primary #7B68EE. Status badges per DESIGN.md section 4 badge specs."
 
 **Building a data table:**
+
 > "Table per DESIGN.md section 4. Header: #0C0D10 bg, Inter 500 12px uppercase 0.04em tracking color #8E95A6. Body rows: #14161B bg, #272B35 bottom border, hover #1C1F26. Cell padding 14px 16px, Inter 400 14px #F0F1F5. SKUs and IDs in JetBrains Mono 13px #8E95A6. Selected row: rgba(123,104,238,0.08) bg with 2px left border #7B68EE."
 
 **Building a form / edit page:**
+
 > "Form inputs per DESIGN.md section 4: #0C0D10 background, 1px #272B35 border, 8px radius, Inter 400 14px #F0F1F5, placeholder #525A6A. Focus: border #7B68EE, box-shadow 0 0 0 3px rgba(123,104,238,0.20). Labels: Inter 500 12px #8E95A6. Field gaps 16px. Section headings Space Grotesk 600 18px. Primary submit button: #7B68EE bg, #0C0D10 text, 8px radius, 10px 20px padding."
 
 **Building a modal:**
+
 > "Modal per DESIGN.md section 4. Overlay: rgba(0,0,0,0.65) with backdrop-filter blur(4px). Container: #1C1F26 bg, 1px #272B35 border, 16px radius, 32px padding, shadow 0 24px 48px rgba(0,0,0,0.6). Header: Space Grotesk 600 18px #F0F1F5. Footer: flex row justify-end, 12px gap, 24px top padding, 1px #272B35 top border."
 
 **Building supplier CRM cards:**
+
 > "Supplier card per DESIGN.md. Surface #14161B, 1px #272B35 border, 12px radius, 24px padding. Supplier name: Inter 500 14px #F0F1F5. Status badge: pill shape per badge specs in DESIGN.md section 4. Metadata (location, SKU count): Inter 400 13px #8E95A6. On hover: border-color #7B68EE, transition 150ms ease."

@@ -237,6 +237,7 @@ shopify_manager/
 │   │   ├── app.products.$id.tsx        # Product detail + AI staging review
 │   │   ├── app.pricing.tsx             # Alerts + rule builder + price history
 │   │   ├── app.settings.tsx            # Store config, email OAuth, templates
+│   │   ├── track.open.$messageId.tsx   # Public open-tracking pixel endpoint (1×1 GIF, no auth)
 │   │   └── webhooks.tsx                # Shopify webhook entry point
 │   ├── components/
 │   │   ├── layout/                     # Page shells, nav wrappers
@@ -282,8 +283,6 @@ shopify_manager/
 │   └── migrations/                     # Migration history (never edit manually)
 ├── extensions/
 │   └── content-blocks/                 # Theme App Extension — Liquid tabs/accordion block
-├── public/
-│   └── pixel.gif                       # 1x1 tracking pixel for email open tracking
 └── shopify.app.toml                    # Shopify CLI config: scopes, webhooks, app URL
 ```
 
@@ -741,15 +740,34 @@ async function getValidAccessToken(shopDomain: string): Promise<string> {
   const account = await db.emailAccount.findUniqueOrThrow({
     where: { shopDomain },
   });
+
   if (account.expiresAt < new Date()) {
-    throw new Error("Token refresh not yet implemented");
+    const decryptedRefresh = decrypt(account.refreshToken);
+    const refreshed =
+      account.provider === "GMAIL"
+        ? await refreshGoogleToken(decryptedRefresh)
+        : await refreshMicrosoftToken(decryptedRefresh);
+
+    // Both rotated tokens are re-encrypted before persistence.
+    await db.emailAccount.update({
+      where: { shopDomain },
+      data: {
+        accessToken: encrypt(refreshed.accessToken),
+        refreshToken: encrypt(refreshed.refreshToken),
+        expiresAt: refreshed.expiresAt,
+      },
+    });
+
+    return refreshed.accessToken;
   }
+
   return decrypt(account.accessToken);
 }
 ```
 
-- Email account rows are shop-scoped and stored with encrypted tokens.
-- The current service throws on expired tokens until provider-specific refresh flows are wired in.
+- Email account rows are shop-scoped (`@unique` on `shopDomain`) and stored with AES-256-encrypted tokens.
+- `getValidAccessToken` is the only sanctioned access path — never decrypt `EmailAccount.accessToken` at call sites.
+- On refresh, both `accessToken` and `refreshToken` rotate and must be re-encrypted before write. Provider client functions (`refreshGoogleToken`, `refreshMicrosoftToken`) return plaintext; the service layer owns the encrypt step.
 
 ### Web Scraping Architecture
 

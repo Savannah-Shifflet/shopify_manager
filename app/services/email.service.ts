@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
 import db from "~/db.server";
 import type { EmailAccount, SupplierEmail } from "@prisma/client";
-import { sendGmailMessage, refreshGoogleToken } from "~/email/gmail.client";
+import {
+  sendGmailMessage,
+  refreshGoogleToken,
+  revokeGoogleToken,
+} from "~/email/gmail.client";
 import {
   sendOutlookMessage,
   refreshMicrosoftToken,
@@ -48,6 +52,30 @@ export async function saveEmailAccount(
 
 export async function deleteEmailAccount(shopDomain: string) {
   return db.emailAccount.deleteMany({ where: { shopDomain } });
+}
+
+/**
+ * Disconnects email account: revokes token (best-effort) and deletes the row.
+ */
+export async function disconnectEmailAccount(
+  shopDomain: string,
+): Promise<void> {
+  const raw = await db.emailAccount.findUnique({
+    where: { shopDomain },
+    select: { provider: true, accessToken: true },
+  });
+  if (!raw) return;
+
+  if (raw.provider === "GMAIL") {
+    try {
+      await revokeGoogleToken(decrypt(raw.accessToken));
+    } catch {
+      // non-fatal: token will auto-expire
+    }
+  }
+  // Outlook tokens auto-expire; revocation is optional
+
+  await db.emailAccount.deleteMany({ where: { shopDomain } });
 }
 
 /**

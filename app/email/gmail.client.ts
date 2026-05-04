@@ -101,3 +101,18 @@ export async function sendGmailMessage(
     threadId: response.data.threadId,
   };
 }
+
+/**
+ * Revokes a Google OAuth access token (best-effort).
+ * Used during email account disconnect to invalidate the token server-side.
+ */
+export async function revokeGoogleToken(accessToken: string): Promise<void> {
+  try {
+    await fetch(
+      `https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(accessToken)}`,
+      { method: "POST" },
+    );
+  } catch {
+    // best-effort — token will auto-expire anyway
+  }
+}

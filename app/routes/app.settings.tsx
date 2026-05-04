@@ -12,7 +12,10 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { getMerchantConfig } from "~/services/supplier.service";
-import { getEmailAccount } from "~/services/email.service";
+import {
+  getEmailAccount,
+  disconnectEmailAccount,
+} from "~/services/email.service";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
@@ -29,8 +32,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   if (intent === "disconnect-email") {
-    // TODO: revoke tokens and delete email account record
-    void session;
+    await disconnectEmailAccount(session.shop);
+    return json({ success: true });
   }
 
   return json({ success: true });
